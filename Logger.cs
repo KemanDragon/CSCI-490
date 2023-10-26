@@ -6,9 +6,7 @@ using Discord.Net;
 using Discord.Rest;
 using Discord.WebSocket; //Since Discord bots use Sockets in order to be able to connect to different servers, I decided to add it here
 
-//Changes that need to be made:
-// - Figure out how to insert Guild and Member attributes
-// - Figure out how to use a log file so that everything the logger logs gets saved to the log file
+
 
 public class logger
 {
@@ -19,34 +17,40 @@ public class logger
     {
         _client = new DiscordSocketClient();
         _client.Log += LogAsync;
-        command.Log += LogAsync;
-     }
-
-        //OffensiveLanguageHandler
-       
-
-         public class AutoModFlaggedMessageAuditLogData : object, IAuditLogData
-
-         public string AutoModRuleName { get; set; } //Get the name of the auto moderation rule that got triggered
         
-        //DeletionEditHandler
-        public class DeletionEditHandler {
-            public class MessageDeleteAuditLogData : object, IAuditLogData
-            {
-                public ulong ChannelId { get; } //Gets the ID of the channel that the messages were deleted from.
 
-                public IUser Target { get; } //Gets the user of the messages that were deleted.
-            }
+        // Add event asyncs
+        _client.UserBanned += UserBannedAsync;
+        _client.MessageReceived += MessageReceivedAsync;
+        _client.MessageUpdated += MessageUpdatedAsync;
+        _client.MessageDeleted += MessageDeletedAsync;
+    }
 
-            public class MemberUpdateAuditLogData : object, IAuditLogData
-            {
-                public MemberInfo After { get; } //Gets the member information after the changes.
+    //OffensiveLanguageHandler
 
-                public MemberInfo Before { get; } //Gets the member information before the changes.
-
-                public IUser Target { get; } // Gets the user that the changes were performed on.
-            }
+    private Task MessageReceivedAsync(SocketMessage message)
+    {
+        if (message is SocketUserMessage userMessage)
+        {
+            // You can add logic to check for offensive language here
+            // If offensive language is detected, call _logger.LogOffensiveLanguage
         }
+        return Task.CompletedTask;
+    }
+
+    //DeletionEditHandler
+    private Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
+    {
+        // Log message edits here using _logger.LogDeletionEdit
+        return Task.CompletedTask;
+    }
+
+    private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
+    {
+        // Log message deletions here using _logger.LogDeletionEdit
+        return Task.CompletedTask;
+    }
+
     //BannedUserHandler
     private Task UserBannedAsync(SocketUser user, SocketGuild guild, string reason) // _client will use this handler since
                                                                                     // this is essentially the BannedUserHandler
@@ -56,5 +60,4 @@ public class logger
         return Task.CompletedTask; //Task has been completed.
     }
 
-}
 }
