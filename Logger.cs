@@ -5,7 +5,7 @@ using Discord;
 using Discord.Net;
 using Discord.Rest;
 using Discord.WebSocket; //Since Discord bots use Sockets in order to be able to connect to different servers, I decided to add it here
-
+using MySQL.Data;
 
 
 public class logger
@@ -18,7 +18,7 @@ public class logger
         _client = new DiscordSocketClient();
         _client.Log += LogAsync;
         
-
+       
         // Add event asyncs
         _client.UserBanned += UserBannedAsync;
         _client.MessageReceived += MessageReceivedAsync;
