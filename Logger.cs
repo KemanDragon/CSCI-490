@@ -73,36 +73,7 @@ public class logger
         return Task.CompletedTask; //Task has been completed.
     }
 
-
-
-
-
-    private void ConnectToDatabase()
-    {
-        try
-        {
-            _connection = new MySqlConnection(_connectionString);
-            _connection.Open();
-            Console.WriteLine("Connected to the database successfully.");
-        }
-        catch (MySqlException ex)
-        {
-            Console.WriteLine("Error connecting to the database: " + ex.Message);
-        }
-    }
-
-    // Other Discord event handlers
-    private Task UserBannedAsync(SocketUser user, SocketGuild guild, string reason)
-    {
-        // Perform database operations related to banned users
-        // e.g., INSERT INTO BannedUsers (UserID, GuildID, Reason) VALUES (user.Id, guild.Id, reason);
-        return Task.CompletedTask;
-    }
-
   
-
-   
-    
     
 
 }
