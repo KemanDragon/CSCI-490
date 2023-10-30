@@ -16,7 +16,7 @@ public class Program {
 
         _client.Log += Log;
 
-        var token = File.ReadAllText("token.txt");
+        var token = "MTE2ODQxOTkyMzc0NDI2MDIxOA.GSgNiK.R8-UmMyBc48oH1iy5HUlS3PXkviKnUSf9REJHA";
 
         await _client.LoginAsync(TokenType.Bot, token);
         await _client.StartAsync();

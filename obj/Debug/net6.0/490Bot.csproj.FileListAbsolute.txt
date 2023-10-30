@@ -1,0 +1,5 @@
+D:\College\CSCI-490\Project\obj\Debug\net6.0\490Bot.csproj.AssemblyReference.cache
+D:\College\CSCI-490\Project\obj\Debug\net6.0\490Bot.GeneratedMSBuildEditorConfig.editorconfig
+D:\College\CSCI-490\Project\obj\Debug\net6.0\490Bot.AssemblyInfoInputs.cache
+D:\College\CSCI-490\Project\obj\Debug\net6.0\490Bot.AssemblyInfo.cs
+D:\College\CSCI-490\Project\obj\Debug\net6.0\490Bot.csproj.CoreCompileInputs.cache
