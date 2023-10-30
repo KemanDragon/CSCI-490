@@ -1,0 +1,5 @@
+C:\Users\coleh\source\repos\CSCI-490\obj\Debug\net6.0\490Bot.csproj.AssemblyReference.cache
+C:\Users\coleh\source\repos\CSCI-490\obj\Debug\net6.0\490Bot.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\coleh\source\repos\CSCI-490\obj\Debug\net6.0\490Bot.AssemblyInfoInputs.cache
+C:\Users\coleh\source\repos\CSCI-490\obj\Debug\net6.0\490Bot.AssemblyInfo.cs
+C:\Users\coleh\source\repos\CSCI-490\obj\Debug\net6.0\490Bot.csproj.CoreCompileInputs.cache
