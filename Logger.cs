@@ -5,25 +5,31 @@ using Discord;
 using Discord.Net;
 using Discord.Rest;
 using Discord.WebSocket; //Since Discord bots use Sockets in order to be able to connect to different servers, I decided to add it here
-using MySql.data.MySqlClient;
+using MySql.Data.MySqlClient;
 
 namespace _490Bot.Handlers.LogHandler {
-    public class logger
+    public class Logger
     {
         private readonly DiscordSocketClient _client;
-        //private Logger _logger;
+        private Logger _logger;
 
-        public Logger()
+        public Logger(DiscordSocketClient client) // Pass the DiscordSocketClient as a parameter
         {
-            _client = new DiscordSocketClient();
+            _client = client;
             _client.Log += LogAsync;
+            
 
-
-            // Add event asyncs
+            //Add event asyncs
             _client.UserBanned += UserBannedAsync;
             _client.MessageReceived += MessageReceivedAsync;
             _client.MessageUpdated += MessageUpdatedAsync;
             _client.MessageDeleted += MessageDeletedAsync;
+        }
+
+        private Task LogAsync(LogMessage log)
+        {
+            //Logic to be added
+            return Task.CompletedTask;
         }
 
         //OffensiveLanguageHandler
@@ -38,14 +44,25 @@ namespace _490Bot.Handlers.LogHandler {
                     // Log the event using the Logger
                     _logger.LogOffensiveLanguage(userMessage.Author.Id, userMessage.Content);
 
-                    // Optionally, you can delete the offending message
-                    await userMessage.DeleteAsync();
+                    //Delete the offensive message
+                    userMessage.DeleteAsync();
 
                     // You can also send a warning or take other actions as needed
-                    await message.Channel.SendMessageAsync($"@{message.Author.Username}, please refrain from using offensive language.");
+                    message.Channel.SendMessageAsync($"@{message.Author.Username}, please refrain from using offensive language.");
                 }
             }
             return Task.CompletedTask;
+        }
+
+        private bool ContainsOffensiveLanguage(string content) // Implement ContainsOffensiveLanguage
+        {
+            // Logic to be added
+            return false;
+        }
+
+        private void LogOffensiveLanguage(ulong authorId, string content) // Implement LogOffensiveLanguage
+        {
+            // logic to be added
         }
 
         //DeletionEditHandler
@@ -61,16 +78,20 @@ namespace _490Bot.Handlers.LogHandler {
             return Task.CompletedTask;
         }
 
+        private Task UserBannedAsync(SocketUser user, SocketGuild guild)
+        {
+            LogBannedUser(user.Id, guild.Id, "Reason not available");
+            return Task.CompletedTask;
+        }
+
         //BannedUserHandler
-        private Task UserBannedAsync(SocketUser user, SocketGuild guild, string reason) // _client will use this handler since
-                                                                                        // this is essentially the BannedUserHandler
+        private void LogBannedUser(ulong userId, ulong guildId, string reason) // _client will use this handler since
+                                                                               // this is essentially the BannedUserHandler
         {
             _logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
                                                               // and the reason for which the user was banned.
             return Task.CompletedTask; //Task has been completed.
         }
-
-
 
     }
 }
