@@ -7,15 +7,30 @@ using Discord.Rest;
 using Discord.WebSocket; //Since Discord bots use Sockets in order to be able to connect to different servers, I decided to add it here
 using MySql.Data.MySqlClient;
 
-namespace _490Bot.Handlers.LogHandler {
+namespace _490Bot.Handlers.LogHandler
+{
+    public sealed class PasssivePermisionHandler
+    {
+        IGuild server;
+        MySqlConnection _connection;
+        String connectionstring = "server=localhost;uid=root;pwd=root;database=LoggerClass";
+
+        async void updatePerms(int userID, int value)
+        {
+            _connection = new MySqlConnection(connectionstring);
+            await _connection.OpenAsync();
+        }
+    }
+}
     public class Logger
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
 
-        public Logger(DiscordSocketClient client) // Pass the DiscordSocketClient as a parameter
+        public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
         {
             _client = client;
+            _logger = logger;
             _client.Log += LogAsync;
             
 
@@ -23,7 +38,7 @@ namespace _490Bot.Handlers.LogHandler {
             _client.UserBanned += UserBannedAsync;
             _client.MessageReceived += MessageReceivedAsync;
             _client.MessageUpdated += MessageUpdatedAsync;
-            _client.MessageDeleted += MessageDeletedAsync;
+            //_client.MessageDeleted += MessageDeletedAsync;
         }
 
         private Task LogAsync(LogMessage log)
@@ -72,11 +87,12 @@ namespace _490Bot.Handlers.LogHandler {
             return Task.CompletedTask;
         }
 
-        private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
+        /*private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
         {
             // Log message deletions here using _logger.LogDeletionEdit
             return Task.CompletedTask;
         }
+        */
 
         private Task UserBannedAsync(SocketUser user, SocketGuild guild)
         {
@@ -88,10 +104,10 @@ namespace _490Bot.Handlers.LogHandler {
         private void LogBannedUser(ulong userId, ulong guildId, string reason) // _client will use this handler since
                                                                                // this is essentially the BannedUserHandler
         {
-            _logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
+            //_logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
                                                               // and the reason for which the user was banned.
-            return Task.CompletedTask; //Task has been completed.
+           // return Task.CompletedTask; //Task has been completed.
         }
 
     }
-}
+
