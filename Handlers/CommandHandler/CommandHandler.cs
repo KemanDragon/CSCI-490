@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 
 namespace _490Bot.Handlers.CommandHandler {
-    internal class CommandHandler {
-        SlashCommandBuilder commandRegister;
+    public class CommandHandler {
+        public SlashCommandBuilder CommandRegister { get; set; }
     }
 }

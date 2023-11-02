@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Discord;
 
 namespace _490Bot.Handlers.ProfileHandler {
-    internal class ProfileHandler {
-        IGuild server;
-        Profile profile;
+    public class ProfileHandler {
+        public IGuild Server { get; set; }
+        public Profile Profile { get; set; }
 
         void updateStatus(String newStatus) {
 
