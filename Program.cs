@@ -23,7 +23,7 @@ public class Program {
 
         await _client.LoginAsync(TokenType.Bot, token);
         await _client.StartAsync();
-        String connectionString = "server=127.0.0.1;uid=root;pwd=root;database=CSCI-490";
+        
         MySqlConnection _connection = new MySqlConnection(connectionString);
         await _connection.OpenAsync();
         if (_connection != null && _connection.State == System.Data.ConnectionState.Open) {
