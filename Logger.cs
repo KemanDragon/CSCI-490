@@ -9,16 +9,79 @@ using MySql.Data.MySqlClient;
 
 namespace _490Bot.Handlers.LogHandler
 {
-    public sealed class PasssivePermisionHandler
+    public class Logs
+    {
+        public ulong UserID { get; set; }
+        public ulong LogID { get; set; }
+        public string LogLevel { get; set; }
+        public string LogMessage { get; set; }
+        public string Reason { get; set; }
+
+        public Logs(ulong userId, ulong logId, string logLevel, string logMessage, string reason)
+        {
+            UserID = userId;
+            LogID = logId;
+            LogLevel = logLevel;
+            LogMessage = logMessage;
+            Reason = reason;
+        }
+    }
+}
+
+public sealed class PasssivePermisionHandler
     {
         IGuild server;
         MySqlConnection _connection;
         String connectionstring = "server=localhost;uid=root;pwd=root;database=LoggerClass";
 
-        async void updatePerms(int userID, int value)
+        public async void OpenConnection()
         {
-            _connection = new MySqlConnection(connectionstring);
-            await _connection.OpenAsync();
+            try
+            {
+                await _connection.OpenAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        public async void CloseConnection()
+        {
+            try
+            {
+                await _connection.CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        public int Insert(Logs logs)
+        {
+            int result = 0;
+            try
+            {
+                OpenConnection();
+                MySqlCommand query = new MySqlCommand();
+                String queryText = $"INSERT INTO logs VALUES(@UserID, @LogID, @LogLevel, @LogMessage, @Reason, 0)";
+                query.CommandText = queryText;
+                query.Connection = _connection;
+                query.Parameters.AddWithValue("@UserID", logs.UserID);
+                query.Parameters.AddWithValue("@LogID", logs.LogID);
+                query.Parameters.AddWithValue("@LogLevel", logs.LogLevel);
+                query.Parameters.AddWithValue("@LogMessage", logs.LogMessage);
+                query.Parameters.AddWithValue("@Reason", logs.Reason);
+                result = query.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
+            CloseConnection();
+            return result;
         }
     }
 }
@@ -38,10 +101,12 @@ namespace _490Bot.Handlers.LogHandler
             _client.UserBanned += UserBannedAsync;
             _client.MessageReceived += MessageReceivedAsync;
             _client.MessageUpdated += MessageUpdatedAsync;
-            //_client.MessageDeleted += MessageDeletedAsync;
+            _client.MessageDeleted += MessageDeletedAsync;
         }
 
-        private Task LogAsync(LogMessage log)
+    public ulong UserID { get; set; }
+
+    private Task LogAsync(LogMessage log)
         {
             //Logic to be added
             return Task.CompletedTask;
@@ -87,12 +152,12 @@ namespace _490Bot.Handlers.LogHandler
             return Task.CompletedTask;
         }
 
-        /*private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
+        private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
         {
             // Log message deletions here using _logger.LogDeletionEdit
             return Task.CompletedTask;
         }
-        */
+        
 
         private Task UserBannedAsync(SocketUser user, SocketGuild guild)
         {
@@ -101,7 +166,7 @@ namespace _490Bot.Handlers.LogHandler
         }
 
         //BannedUserHandler
-        private void LogBannedUser(ulong userId, ulong guildId, string reason) // _client will use this handler since
+        private void LogBannedUser(ulong UserId, ulong guildId, string reason) // _client will use this handler since
                                                                                // this is essentially the BannedUserHandler
         {
             //_logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
