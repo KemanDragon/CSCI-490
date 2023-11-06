@@ -26,14 +26,17 @@ namespace _490Bot.Handlers.LogHandler
             Reason = reason;
         }
     }
-}
 
-public sealed class PasssivePermisionHandler
+
+    public sealed class DatabaseConnector
     {
         IGuild server;
         MySqlConnection _connection;
-        String connectionstring = "server=localhost;uid=root;pwd=root;database=LoggerClass";
-
+        // String connectionstring = "server=localhost;uid=root;pwd=root;database=LoggerClass";
+        public DatabaseConnector()
+        {
+            _connection = new MySqlConnection("server=localhost;uid=root;pwd=root;database=LoggerClass");
+        }
         public async void OpenConnection()
         {
             try
@@ -84,7 +87,7 @@ public sealed class PasssivePermisionHandler
             return result;
         }
     }
-}
+
     public class Logger
     {
         private readonly DiscordSocketClient _client;
@@ -95,7 +98,7 @@ public sealed class PasssivePermisionHandler
             _client = client;
             _logger = logger;
             _client.Log += LogAsync;
-            
+
 
             //Add event asyncs
             _client.UserBanned += UserBannedAsync;
@@ -104,9 +107,9 @@ public sealed class PasssivePermisionHandler
             _client.MessageDeleted += MessageDeletedAsync;
         }
 
-    public ulong UserID { get; set; }
+        public ulong UserID { get; set; }
 
-    private Task LogAsync(LogMessage log)
+        private Task LogAsync(LogMessage log)
         {
             //Logic to be added
             return Task.CompletedTask;
@@ -152,12 +155,14 @@ public sealed class PasssivePermisionHandler
             return Task.CompletedTask;
         }
 
-        private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
+        private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
         {
             // Log message deletions here using _logger.LogDeletionEdit
             return Task.CompletedTask;
         }
-        
+
+
+
 
         private Task UserBannedAsync(SocketUser user, SocketGuild guild)
         {
@@ -170,9 +175,10 @@ public sealed class PasssivePermisionHandler
                                                                                // this is essentially the BannedUserHandler
         {
             //_logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
-                                                              // and the reason for which the user was banned.
-           // return Task.CompletedTask; //Task has been completed.
+            // and the reason for which the user was banned.
+            // return Task.CompletedTask; //Task has been completed.
         }
 
     }
 
+}
