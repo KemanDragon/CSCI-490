@@ -92,6 +92,7 @@ namespace _490Bot.Handlers.LogHandler
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
+        private char commandPrefix = '!'; // Add this line
 
         public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
         {
@@ -121,13 +122,26 @@ namespace _490Bot.Handlers.LogHandler
         {
             if (message is SocketUserMessage userMessage)
             {
-                // Check for offensive language in the message content
-                if (ContainsOffensiveLanguage(userMessage.Content))
+                // Check for commands with the specified prefix character
+                if (userMessage.Content.StartsWith(commandPrefix.ToString()))
+                {
+                    // Extract the command without the prefix character
+                    string command = userMessage.Content.Substring(1).ToLower(); // Convert to lowercase for case-insensitive matching
+
+                    // Check for specific commands
+                    if (command == "get message")
+                    {
+                        // Execute the "get message" command
+                        message.Channel.SendMessageAsync("You've used the get message command.");
+                    }
+               
+                }
+                else if (ContainsOffensiveLanguage(userMessage.Content))
                 {
                     // Log the event using the Logger
                     _logger.LogOffensiveLanguage(userMessage.Author.Id, userMessage.Content);
 
-                    //Delete the offensive message
+                    // Delete the offensive message
                     userMessage.DeleteAsync();
 
                     // You can also send a warning or take other actions as needed
@@ -135,6 +149,8 @@ namespace _490Bot.Handlers.LogHandler
                 }
             }
             return Task.CompletedTask;
+        }
+ return Task.CompletedTask;
         }
 
         private bool ContainsOffensiveLanguage(string content) // Implement ContainsOffensiveLanguage
