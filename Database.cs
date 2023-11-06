@@ -11,7 +11,6 @@ using MySqlX.XDevAPI.Common;
 using MySqlX.XDevAPI.Relational;
 using static System.Net.Mime.MediaTypeNames;
 
-
 namespace _490Bot {
     public class Database {
         private static String connectionString = "server=127.0.0.1;uid=root;pwd=root;database=CSCI-490";
@@ -75,118 +74,5 @@ namespace _490Bot {
             CloseConnection();
             return result;
         }
-
-
-        // Insert a log into the database
-        public int Insert(Logs log)
-        {
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                string queryText = "INSERT INTO logs (UserID, LogID, LogLevel, LogMessage, Reason) VALUES (@UserID, @LogID, @LogLevel, @LogMessage, @Reason)";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                query.Parameters.AddWithValue("@UserID", log.UserID);
-                query.Parameters.AddWithValue("@LogID", log.LogID);
-                query.Parameters.AddWithValue("@LogLevel", log.LogLevel);
-                query.Parameters.AddWithValue("@LogMessage", log.LogMessage);
-                query.Parameters.AddWithValue("@Reason", log.Reason);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            CloseConnection();
-            return result;
-        }
-
-
-        // Retrieve logs based on UserID
-        .
-        public List<Logs> RetrieveLogs()
-        {
-            List<Logs> logs = new List<Logs>();
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand("SELECT * FROM logs", _connection);
-                using (MySqlDataReader reader = query.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        Logs log = new Logs(
-                            (ulong)reader["UserID"],
-                            (ulong)reader["LogID"],
-                            reader["LogLevel"].ToString(),
-                            reader["LogMessage"].ToString(),
-                            reader["Reason"].ToString()
-                        );
-                        logs.Add(log);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-
-            CloseConnection();
-            return logs;
-        }
-
-
-
-
-
-        // Update a log based on LogID
-        public int UpdateLog(Logs log)
-        {
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                string queryText = "UPDATE logs SET LogLevel = @LogLevel, LogMessage = @LogMessage, Reason = @Reason WHERE LogID = @LogID";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                query.Parameters.AddWithValue("@LogID", log.LogID);
-                query.Parameters.AddWithValue("@LogLevel", log.LogLevel);
-                query.Parameters.AddWithValue("@LogMessage", log.LogMessage);
-                query.Parameters.AddWithValue("@Reason", log.Reason);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            CloseConnection();
-            return result;
-        }
-
-        // Delete a log based on LogID
-        public int DeleteLog(ulong logId)
-        {
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                string queryText = "DELETE FROM logs WHERE LogID = @LogID";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                query.Parameters.AddWithValue("@LogID", logId);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            CloseConnection();
-            return result;
-        }
     }
-}
 }
