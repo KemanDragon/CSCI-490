@@ -17,7 +17,7 @@ namespace _490Bot
     {
         private static String connectionString = "server=127.0.0.1;uid=root;pwd=root;database=CSCI-490";
         private MySqlConnection _connection = new MySqlConnection(connectionString);
-
+        private static String connectionString = "server=127.0.0.1;uid=root;pwd=W3$TEr45;database=LoggerClass";
         public async void OpenConnection()
         {
             try
