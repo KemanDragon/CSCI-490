@@ -37,15 +37,15 @@ namespace _490Bot {
             try {
                 OpenConnection();
                 MySqlCommand query = new MySqlCommand();
-                String queryText = $"INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
+                String queryText = "INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
                 query.CommandText = queryText;
                 query.Connection = _connection;
                 query.Parameters.AddWithValue("@BadgeName", badge.BadgeName);
                 query.Parameters.AddWithValue("@BadgeDesc", badge.BadgeDesc);
                 query.Parameters.AddWithValue("@BadgeIcon", badge.BadgeIcon);
                 result = query.ExecuteNonQuery();
-            } catch (Exception e) {
-                Console.WriteLine(e.ToString());
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
             }
 
             CloseConnection();
@@ -54,25 +54,40 @@ namespace _490Bot {
 
         public int Insert(Profile profile) {
             int result = 0;
-            try
-            {
+            try {
                 OpenConnection();
                 MySqlCommand query = new MySqlCommand();
-                String queryText = $"INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
+                String queryText = "INSERT INTO profile VALUES(@MemberID, NULL, NULL, 1, 0, 100)";
                 query.CommandText = queryText;
                 query.Connection = _connection;
-                query.Parameters.AddWithValue("@BadgeName", profile.);
-                query.Parameters.AddWithValue("@BadgeDesc", badge.BadgeDesc);
-                query.Parameters.AddWithValue("@BadgeIcon", badge.BadgeIcon);
+                query.Parameters.AddWithValue("@MemberID", profile.UserID);
                 result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
             }
 
             CloseConnection();
             return result;
         }
+
+        public int Insert(ulong userID) {
+            int result = 0;
+            try {
+                OpenConnection();
+                MySqlCommand query = new MySqlCommand();
+                String queryText = "INSERT INTO Permissions VALUES(@MemberID, 1);";
+                query.CommandText = queryText;
+                query.Connection = _connection;
+                query.Parameters.AddWithValue("@MemberID", userID);
+                result = query.ExecuteNonQuery();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+            
+            CloseConnection();
+            return result;
+        }
+
+        public
     }
 }
