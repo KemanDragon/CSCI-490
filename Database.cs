@@ -11,30 +11,42 @@ using MySqlX.XDevAPI.Common;
 using MySqlX.XDevAPI.Relational;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace _490Bot {
-    public class Database {
+namespace _490Bot
+{
+    public class Database
+    {
         private static String connectionString = "server=127.0.0.1;uid=root;pwd=root;database=CSCI-490";
         private MySqlConnection _connection = new MySqlConnection(connectionString);
 
-        public async void OpenConnection() {
-            try {
+        public async void OpenConnection()
+        {
+            try
+            {
                 await _connection.OpenAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
         }
 
-        public async void CloseConnection() {
-            try {
+        public async void CloseConnection()
+        {
+            try
+            {
                 await _connection.CloseAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
         }
 
-        public int Insert(Badge badge) {
+        public int Insert(Badge badge)
+        {
             int result = 0;
-            try {
+            try
+            {
                 OpenConnection();
                 MySqlCommand query = new MySqlCommand();
                 String queryText = $"INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
@@ -44,7 +56,9 @@ namespace _490Bot {
                 query.Parameters.AddWithValue("@BadgeDesc", badge.BadgeDesc);
                 query.Parameters.AddWithValue("@BadgeIcon", badge.BadgeIcon);
                 result = query.ExecuteNonQuery();
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Console.WriteLine(e.ToString());
             }
 
@@ -52,7 +66,8 @@ namespace _490Bot {
             return result;
         }
 
-        public int Insert(Profile profile) {
+        public int Insert(Profile profile)
+        {
             int result = 0;
             try
             {
