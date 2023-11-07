@@ -9,3 +9,10 @@
 /.vs/ProjectEvaluation/490bot.metadata.v7.bin
 /.vs/490Bot/v17/.futdcache.v2
 /.vs/ProjectEvaluation/490bot.projects.v7.bin
+/obj/Debug/net6.0/490Bot.assets.cache
+/obj/Debug/net6.0/490Bot.csproj.AssemblyReference.cache
+/obj/Debug/net6.0/490Bot.GeneratedMSBuildEditorConfig.editorconfig
+/obj/490Bot.csproj.nuget.dgspec.json
+/obj/490Bot.csproj.nuget.g.props
+/obj/project.assets.json
+/obj/project.nuget.cache

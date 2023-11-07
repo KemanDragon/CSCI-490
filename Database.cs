@@ -136,7 +136,7 @@ namespace _490Bot {
             try {
                 await OpenConnection();
                 MySqlCommand query = new() {
-                    CommandText = $"SELECT PermLevel FROM Permissions WHERE MemberID={userID};"
+                    CommandText = $"SELECT PermLevel FROM Permissions WHERE MemberID={userID};",
                     Connection = _connection
                 };
 
