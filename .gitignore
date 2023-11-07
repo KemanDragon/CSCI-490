@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/*
+/bin/*
+/obj/Debug/net6.0/490Bot.pdb
+/obj/Debug/net6.0/490Bot.dll
+/obj/Debug/net6.0/490Bot.csproj.CoreCompileInputs.cache
+/obj/Debug/net6.0/refint/490Bot.dll
+/obj/Debug/net6.0/ref/490Bot.dll
