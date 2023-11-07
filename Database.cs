@@ -17,7 +17,7 @@ namespace _490Bot
     {
         private static String connectionString = "server=127.0.0.1;uid=root;pwd=root;database=CSCI-490";
         private MySqlConnection _connection = new MySqlConnection(connectionString);
-        private static String connectionString = "server=127.0.0.1;uid=root;pwd=W3$TEr45;database=LoggerClass";
+        //private static String connectionString = "server=127.0.0.1;uid=root;pwd=W3$TEr45;database=LoggerClass";
         public async void OpenConnection()
         {
             try
@@ -76,9 +76,9 @@ namespace _490Bot
                 String queryText = $"INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
                 query.CommandText = queryText;
                 query.Connection = _connection;
-                query.Parameters.AddWithValue("@BadgeName", profile.);
-                query.Parameters.AddWithValue("@BadgeDesc", badge.BadgeDesc);
-                query.Parameters.AddWithValue("@BadgeIcon", badge.BadgeIcon);
+                //query.Parameters.AddWithValue("@BadgeName", profile.);
+                //query.Parameters.AddWithValue("@BadgeDesc", badge.BadgeDesc);
+                //query.Parameters.AddWithValue("@BadgeIcon", badge.BadgeIcon);
                 result = query.ExecuteNonQuery();
             }
             catch (Exception e)
@@ -91,6 +91,7 @@ namespace _490Bot
         }
 
         // Insert a log into the database
+        /*
         public int Insert(Logs log)
         {
             int result = 0;
@@ -115,10 +116,10 @@ namespace _490Bot
             CloseConnection();
             return result;
         }
-
+        */
 
         // Retrieve logs based on UserID
-        .
+        /*
         public List<Logs> RetrieveLogs()
         {
             List<Logs> logs = new List<Logs>();
@@ -152,9 +153,10 @@ namespace _490Bot
 
 
 
-
+        */
 
         // Update a log based on LogID
+        /*
         public int UpdateLog(Logs log)
         {
             int result = 0;
@@ -178,7 +180,7 @@ namespace _490Bot
             CloseConnection();
             return result;
         }
-
+        */
         // Delete a log based on LogID
         public int DeleteLog(ulong logId)
         {

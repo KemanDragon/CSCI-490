@@ -102,10 +102,10 @@ namespace _490Bot.Handlers.LogHandler
 
 
             //Add event asyncs
-            _client.UserBanned += UserBannedAsync;
+            //_client.UserBanned += UserBannedAsync;
             _client.MessageReceived += MessageReceivedAsync;
-            _client.MessageUpdated += MessageUpdatedAsync;
-            _client.MessageDeleted += MessageDeletedAsync;
+            //_client.MessageUpdated += MessageUpdatedAsync;
+            //_client.MessageDeleted += MessageDeletedAsync;
         }
 
         public ulong UserID { get; set; }
@@ -136,6 +136,7 @@ namespace _490Bot.Handlers.LogHandler
                     }
                
                 }
+                /*
                 else if (ContainsOffensiveLanguage(userMessage.Content))
                 {
                     // Log the event using the Logger
@@ -146,13 +147,15 @@ namespace _490Bot.Handlers.LogHandler
 
                     // You can also send a warning or take other actions as needed
                     message.Channel.SendMessageAsync($"@{message.Author.Username}, please refrain from using offensive language.");
-                }
+                }*/
+                
             }
             return Task.CompletedTask;
         }
- return Task.CompletedTask;
+        
+ //return Task.CompletedTask;
         }
-
+    /*
         private bool ContainsOffensiveLanguage(string content) // Implement ContainsOffensiveLanguage
         {
             // Logic to be added
@@ -176,7 +179,7 @@ namespace _490Bot.Handlers.LogHandler
             // Log message deletions here using _logger.LogDeletionEdit
             return Task.CompletedTask;
         }
-
+    
 
 
 
@@ -187,14 +190,14 @@ namespace _490Bot.Handlers.LogHandler
         }
 
         //BannedUserHandler
-        private void LogBannedUser(ulong UserId, ulong guildId, string reason) // _client will use this handler since
+        /private void LogBannedUser(ulong UserId, ulong guildId, string reason) // _client will use this handler since
                                                                                // this is essentially the BannedUserHandler
         {
             //_logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
             // and the reason for which the user was banned.
             // return Task.CompletedTask; //Task has been completed.
         }
-
-    }
+    */
+    //}
 
 }

@@ -2340,19 +2340,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Owner\\.nuget\\packages\\": {}
+    "C:\\Users\\coleh\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\College\\CSCI-490\\Project\\490Bot.csproj",
+      "projectUniqueName": "C:\\Users\\coleh\\source\\repos\\KemanDragon\\CSCI-490\\490Bot.csproj",
       "projectName": "490Bot",
-      "projectPath": "D:\\College\\CSCI-490\\Project\\490Bot.csproj",
-      "packagesPath": "C:\\Users\\Owner\\.nuget\\packages\\",
-      "outputPath": "D:\\College\\CSCI-490\\Project\\obj\\",
+      "projectPath": "C:\\Users\\coleh\\source\\repos\\KemanDragon\\CSCI-490\\490Bot.csproj",
+      "packagesPath": "C:\\Users\\coleh\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\coleh\\source\\repos\\KemanDragon\\CSCI-490\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Owner\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\coleh\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -2403,7 +2403,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files (x86)\\dotnet\\sdk\\6.0.414\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.401\\RuntimeIdentifierGraph.json"
       }
     }
   }
