@@ -2,15 +2,6 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/490Bot/FileContentIndex/447827c6-c6b7-4a95-b6c3-41cbb9693fcb.vsidx
-/.vs/490Bot/FileContentIndex/90db31ef-eb60-4ac1-81ea-64eb0d2f8e2f.vsidx
-/.vs/490Bot/FileContentIndex/4959f196-f003-4784-a221-0be102e0fd65.vsidx
-/.vs/490Bot/FileContentIndex
-/.vs/490Bot/v17/.suo
-/.vs/CSCI-490/FileContentIndex/65d5ace0-c1c6-48ec-83c6-dea789ab3094.vsidx
-/.vs/CSCI-490/FileContentIndex/67eec61f-6e39-4705-82e0-b8e84de55a86.vsidx
-/.vs/CSCI-490/FileContentIndex/922f21c1-3aff-456c-ab26-f3229f2c2e32.vsidx
-/.vs/CSCI-490/FileContentIndex/e056705b-d864-4349-b6c5-651cd48f5098.vsidx
-/bin/Debug/net6.0/runtimes/browser/lib/net6.0/System.Text.Encodings.Web.dll
-/bin/Debug/net6.0/runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll
-/bin/Debug/net6.0/runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll
+/.vs/*
+/bin/*
+/obj/*
