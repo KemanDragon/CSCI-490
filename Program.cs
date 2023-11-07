@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using Discord;
 using Discord.WebSocket;
-using MySql.Data.MySqlClient;
 using _490Bot.Handlers.ProfileHandler;
 
 public class Program {
