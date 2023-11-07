@@ -23,7 +23,7 @@ public class Program {
 
         await _client.LoginAsync(TokenType.Bot, token);
         await _client.StartAsync();
-        
+        /*
 
         await _connection.OpenAsync();
         if (_connection != null && _connection.State == System.Data.ConnectionState.Open) {
@@ -44,6 +44,7 @@ public class Program {
         }
 
         await _connection.CloseAsync();
+        */
         await Task.Delay(-1);
     }
 }

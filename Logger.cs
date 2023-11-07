@@ -92,7 +92,7 @@ namespace _490Bot.Handlers.LogHandler
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
-        private char commandPrefix = '!'; // Add this line
+        private char commandPrefix = '!'; 
 
         public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
         {
@@ -112,13 +112,16 @@ namespace _490Bot.Handlers.LogHandler
 
         private Task LogAsync(LogMessage log)
         {
+
+            Console.WriteLine(log);
+
             //Logic to be added
             return Task.CompletedTask;
         }
 
         //OffensiveLanguageHandler
 
-        private Task MessageReceivedAsync(SocketMessage message)
+        private async Task MessageReceivedAsync(SocketMessage message)
         {
             if (message is SocketUserMessage userMessage)
             {
@@ -129,28 +132,31 @@ namespace _490Bot.Handlers.LogHandler
                     string command = userMessage.Content.Substring(1).ToLower(); // Convert to lowercase for case-insensitive matching
 
                     // Check for specific commands
-                    if (command == "get message")
+                    if (command == "getmessage")
                     {
                         // Execute the "get message" command
-                        message.Channel.SendMessageAsync("You've used the get message command.");
+                        await message.Channel.SendMessageAsync("You've used the get message command.");
+                        Console.WriteLine("Message has been sent"); // Print a message to the console
                     }
-               
                 }
-                /*
-                else if (ContainsOffensiveLanguage(userMessage.Content))
-                {
-                    // Log the event using the Logger
-                    _logger.LogOffensiveLanguage(userMessage.Author.Id, userMessage.Content);
+            
 
-                    // Delete the offensive message
-                    userMessage.DeleteAsync();
 
-                    // You can also send a warning or take other actions as needed
-                    message.Channel.SendMessageAsync($"@{message.Author.Username}, please refrain from using offensive language.");
-                }*/
-                
-            }
-            return Task.CompletedTask;
+            /*
+            else if (ContainsOffensiveLanguage(userMessage.Content))
+            {
+                // Log the event using the Logger
+                _logger.LogOffensiveLanguage(userMessage.Author.Id, userMessage.Content);
+
+                // Delete the offensive message
+                userMessage.DeleteAsync();
+
+                // You can also send a warning or take other actions as needed
+                message.Channel.SendMessageAsync($"@{message.Author.Username}, please refrain from using offensive language.");
+            }*/
+
+        }
+            await Task.CompletedTask;
         }
         
  //return Task.CompletedTask;
