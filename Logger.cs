@@ -7,6 +7,7 @@ using Discord.Rest;
 using Discord.WebSocket; //Since Discord bots use Sockets in order to be able to connect to different servers, I decided to add it here
 using MySql.Data.MySqlClient;
 
+
 namespace _490Bot.Handlers.LogHandler
 {
     public class Logs
@@ -92,8 +93,7 @@ namespace _490Bot.Handlers.LogHandler
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
-        private char commandPrefix = '!'; 
-
+        
         public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
         {
             _client = client;
@@ -103,7 +103,7 @@ namespace _490Bot.Handlers.LogHandler
 
             //Add event asyncs
             //_client.UserBanned += UserBannedAsync;
-            _client.MessageReceived += MessageReceivedAsync;
+            //_client.MessageReceived += MessageReceivedAsync;
             //_client.MessageUpdated += MessageUpdatedAsync;
             //_client.MessageDeleted += MessageDeletedAsync;
         }
@@ -121,24 +121,7 @@ namespace _490Bot.Handlers.LogHandler
 
         //OffensiveLanguageHandler
 
-        private async Task MessageReceivedAsync(SocketMessage message)
-        {
-            if (message is SocketUserMessage userMessage)
-            {
-                // Check for commands with the specified prefix character
-                if (userMessage.Content.StartsWith(commandPrefix.ToString()))
-                {
-                    // Extract the command without the prefix character
-                    string command = userMessage.Content.Substring(1).ToLower(); // Convert to lowercase for case-insensitive matching
-
-                    // Check for specific commands
-                    if (command == "getmessage")
-                    {
-                        // Execute the "get message" command
-                        await message.Channel.SendMessageAsync("You've used the get message command.");
-                        Console.WriteLine("Message has been sent"); // Print a message to the console
-                    }
-                }
+        
             
 
 
@@ -155,9 +138,9 @@ namespace _490Bot.Handlers.LogHandler
                 message.Channel.SendMessageAsync($"@{message.Author.Username}, please refrain from using offensive language.");
             }*/
 
-        }
-            await Task.CompletedTask;
-        }
+        //}
+           // await Task.CompletedTask;
+        //}
         
  //return Task.CompletedTask;
         }
@@ -207,3 +190,4 @@ namespace _490Bot.Handlers.LogHandler
     //}
 
 }
+

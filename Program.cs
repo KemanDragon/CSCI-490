@@ -4,7 +4,8 @@ using Discord.WebSocket;
 using MySql.Data.MySqlClient;
 using _490Bot.Handlers.ProfileHandler;
 
-public class Program {
+public class Program
+{
     public static Task Main(string[] args) => new Program().MainAsync();
     private DiscordSocketClient _client;
 
@@ -14,7 +15,8 @@ public class Program {
         return Task.CompletedTask;
     }
 
-    private async Task MainAsync() {
+    private async Task MainAsync()
+    {
         _client = new DiscordSocketClient();
 
         _client.Log += Log;
@@ -46,5 +48,28 @@ public class Program {
         await _connection.CloseAsync();
         */
         await Task.Delay(-1);
+    }
+    private char commandPrefix = '!'; // Add this line
+    private Task MessageReceivedAsync(SocketMessage message)
+    {
+        if (message is SocketUserMessage userMessage)
+        {
+            // Check for commands with the specified prefix character
+            if (userMessage.Content.StartsWith(commandPrefix.ToString()))
+            {
+                // Extract the command without the prefix character
+                string command = userMessage.Content.Substring(1).ToLower(); // Convert to lowercase for case-insensitive matching
+
+                // Check for specific commands
+                if (command == "getmessage")
+                {
+                    // Execute the "get message" command
+                    message.Channel.SendMessageAsync("You've used the get message command.");
+                    Console.WriteLine("Message has been sent");
+                }
+
+            }
+        }
+        return Task.CompletedTask;
     }
 }
