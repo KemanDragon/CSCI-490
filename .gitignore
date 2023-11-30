@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/obj/Debug/net6.0/.NETCoreApp,Version=v6.0.AssemblyAttributes.cs
+/obj/Debug/net6.0/490Bot.assets.cache
+/obj/Debug/net6.0/490Bot.GeneratedMSBuildEditorConfig.editorconfig
