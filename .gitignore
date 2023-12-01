@@ -82,3 +82,6 @@
 /obj/Release/net6.0/490Bot.GeneratedMSBuildEditorConfig.editorconfig
 /obj/Release/net6.0/490Bot.GlobalUsings.g.cs
 /obj/490Bot.csproj.nuget.g.targets
+/obj/Debug/net6.0/refint/490Bot.dll
+/obj/Debug/net6.0/490Bot.dll
+/obj/Debug/net6.0/490Bot.pdb

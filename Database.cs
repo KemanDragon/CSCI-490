@@ -5,9 +5,11 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using _490Bot.Handlers.ProfileHandler;
+
 using MySql.Data;
 using MySql.Data.MySqlClient;
+
+using _490Bot.Handlers;
 
 namespace _490Bot {
     public class Database {
