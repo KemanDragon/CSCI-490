@@ -102,10 +102,10 @@ namespace _490Bot.Handlers.LogHandler
 
 
             //Add event asyncs
-            //_client.UserBanned += UserBannedAsync;
+            _client.UserBanned += UserBannedAsync;
             //_client.MessageReceived += MessageReceivedAsync;
-            //_client.MessageUpdated += MessageUpdatedAsync;
-            //_client.MessageDeleted += MessageDeletedAsync;
+            _client.MessageUpdated += MessageUpdatedAsync;
+            _client.MessageDeleted += MessageDeletedAsync;
         }
 
         public ulong UserID { get; set; }
@@ -120,37 +120,6 @@ namespace _490Bot.Handlers.LogHandler
         }
 
         //OffensiveLanguageHandler
-
-        
-            
-
-
-            /*
-            else if (ContainsOffensiveLanguage(userMessage.Content))
-            {
-                // Log the event using the Logger
-                _logger.LogOffensiveLanguage(userMessage.Author.Id, userMessage.Content);
-
-                // Delete the offensive message
-                userMessage.DeleteAsync();
-
-                // You can also send a warning or take other actions as needed
-                message.Channel.SendMessageAsync($"@{message.Author.Username}, please refrain from using offensive language.");
-            }*/
-
-        //}
-           // await Task.CompletedTask;
-        //}
-        
- //return Task.CompletedTask;
-        }
-    /*
-        private bool ContainsOffensiveLanguage(string content) // Implement ContainsOffensiveLanguage
-        {
-            // Logic to be added
-            return false;
-        }
-
         private void LogOffensiveLanguage(ulong authorId, string content) // Implement LogOffensiveLanguage
         {
             // logic to be added
@@ -179,15 +148,15 @@ namespace _490Bot.Handlers.LogHandler
         }
 
         //BannedUserHandler
-        /private void LogBannedUser(ulong UserId, ulong guildId, string reason) // _client will use this handler since
+        private void LogBannedUser(ulong UserId, ulong guildId, string reason) // _client will use this handler since
                                                                                // this is essentially the BannedUserHandler
         {
             //_logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
             // and the reason for which the user was banned.
             // return Task.CompletedTask; //Task has been completed.
         }
-    */
-    //}
+    
+    }
 
 }
 
