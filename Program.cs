@@ -82,7 +82,7 @@ internal class Program {
             }
 
             // Keep this task in limbo until the program is closed.
-            await Task.Delay(-1);
+            await Task.Delay(-1, ct);
         } catch (Exception ex) {
             Console.WriteLine("Task Terminated");
             Console.WriteLine(ex.ToString());
@@ -108,6 +108,7 @@ internal class Program {
         Environment.Exit(exitCode);
         await Task.CompletedTask;
     }
+
     private char commandPrefix = '!'; // Add this line
     private Task MessageReceivedAsync(SocketMessage message)
     {
