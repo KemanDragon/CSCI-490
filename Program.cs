@@ -5,7 +5,8 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Interactions;
 
-using _490Bot.Handlers;
+using _490Bot.Handlers.ProfileHandler;
+using _490Bot.Handlers.LogHandler;
 
 internal class Program {
     public static Task Main(string[] args) => new Program().MainAsync();
@@ -65,12 +66,9 @@ internal class Program {
             config.MessageCacheSize = 2048;
             config.AlwaysDownloadUsers = true;
             config.GatewayIntents = GatewayIntents.All;
-            
-            // Add events methods that the client needs to look for here
             _client = new DiscordSocketClient(config);
-            _client.Log += Log;
-            _client.MessageReceived += MessageReceivedAsync;
 
+            _client.Log += Log;
             RegisterSlashCommands();
             
             try {
@@ -112,9 +110,9 @@ internal class Program {
     }
 
     private char commandPrefix = '!'; // Add this line
-    private async Task MessageReceivedAsync(SocketMessage message)
+    private Task MessageReceivedAsync(SocketMessage message)
     {
-        /*if (message is SocketUserMessage userMessage)
+        if (message is SocketUserMessage userMessage)
         {
             // Check for commands with the specified prefix character
             if (userMessage.Content.StartsWith(commandPrefix.ToString()))
@@ -126,18 +124,12 @@ internal class Program {
                 if (command == "getmessage")
                 {
                     // Execute the "get message" command
-                    await message.Channel.SendMessageAsync("You've used the get message command.");
+                    message.Channel.SendMessageAsync("You've used the get message command.");
                     Console.WriteLine("Message has been sent");
                 }
 
             }
-        }*/
-        if (message is not SocketUserMessage msg || message.Author.IsBot) return;
-
-        string messageContent = msg.Content;
-        string responseMessage = $"Message received: {messageContent}";
-
-        var reply = new MessageReference(msg.Id);
-        await message.Channel.SendMessageAsync(responseMessage, false, null, null, null, reply); ;
+        }
+        return Task.CompletedTask;
     }
 }

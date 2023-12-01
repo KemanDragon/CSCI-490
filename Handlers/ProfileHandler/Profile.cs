@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 
-namespace _490Bot.Handlers {
+namespace _490Bot.Handlers.ProfileHandler {
     public class Profile {
         public ulong UserID { get; set; }
         public String StatusField { get; set; }
