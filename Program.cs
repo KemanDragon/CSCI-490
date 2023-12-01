@@ -6,12 +6,14 @@ using Discord.WebSocket;
 using Discord.Interactions;
 
 using _490Bot.Handlers.ProfileHandler;
+using _490Bot.Handlers.LogHandler;
 
 internal class Program {
     public static Task Main(string[] args) => new Program().MainAsync();
     private DiscordSocketClient _client;
     private Lazy<ProfileHandler> _profileHandler;
 
+    private Logger _logger;
     private Task Log(LogMessage msg) {
         Console.WriteLine(msg.ToString());
         return Task.CompletedTask;
@@ -105,5 +107,28 @@ internal class Program {
         // Additional cleanup actions to go here as other functions are finished
         Environment.Exit(exitCode);
         await Task.CompletedTask;
+    }
+    private char commandPrefix = '!'; // Add this line
+    private Task MessageReceivedAsync(SocketMessage message)
+    {
+        if (message is SocketUserMessage userMessage)
+        {
+            // Check for commands with the specified prefix character
+            if (userMessage.Content.StartsWith(commandPrefix.ToString()))
+            {
+                // Extract the command without the prefix character
+                string command = userMessage.Content.Substring(1).ToLower(); // Convert to lowercase for case-insensitive matching
+
+                // Check for specific commands
+                if (command == "getmessage")
+                {
+                    // Execute the "get message" command
+                    message.Channel.SendMessageAsync("You've used the get message command.");
+                    Console.WriteLine("Message has been sent");
+                }
+
+            }
+        }
+        return Task.CompletedTask;
     }
 }
