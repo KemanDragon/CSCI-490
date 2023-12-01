@@ -15,9 +15,8 @@ namespace _490Bot.Handlers.ProfileHandler {
         public int ExperienceCurrent { get; set; }
         public int ExperienceNeeded { get; set; }
 
-        int levelUp() {
-            int newLevel = 0;
-            return newLevel;
+        public void LevelUp() {
+            Level++;
         }
     }
 }
