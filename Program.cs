@@ -1,75 +1,109 @@
-﻿using System.Data;
+﻿using System;
+using System.Reflection;
+
+
 using Discord;
 using Discord.WebSocket;
-using MySql.Data.MySqlClient;
+using Discord.Interactions;
 using _490Bot.Handlers.ProfileHandler;
 
-public class Program
-{
+internal class Program {
     public static Task Main(string[] args) => new Program().MainAsync();
     private DiscordSocketClient _client;
+    private ProfileHandler _profileHandler;
 
-    private Task Log(LogMessage msg)
-    {
+    private Task Log(LogMessage msg) {
         Console.WriteLine(msg.ToString());
         return Task.CompletedTask;
     }
 
-    private async Task MainAsync()
-    {
-        _client = new DiscordSocketClient();
-
-        _client.Log += Log;
-
-        var token = "MTE2ODQxOTkyMzc0NDI2MDIxOA.GSgNiK.R8-UmMyBc48oH1iy5HUlS3PXkviKnUSf9REJHA";
-
-        await _client.LoginAsync(TokenType.Bot, token);
-        await _client.StartAsync();
-        /*
-
-        await _connection.OpenAsync();
-        if (_connection != null && _connection.State == System.Data.ConnectionState.Open) {
-            Console.WriteLine("Connection to database successful.");
-            Badge test = new();
-            MySqlCommand testQuery = new MySqlCommand();
-            String testQueryText = $"INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
-            testQuery.CommandText = testQueryText;
-            testQuery.Connection = _connection;
-            testQuery.Parameters.AddWithValue("@BadgeName", test.BadgeName);
-            testQuery.Parameters.AddWithValue("@BadgeDesc", test.BadgeDesc);
-            testQuery.Parameters.AddWithValue("@BadgeIcon", test.BadgeIcon);
-            int result = testQuery.ExecuteNonQuery();
-            if (result < 0) { Console.WriteLine("Error inserting"); }
-            else Console.WriteLine("Successfully inserted.");
-        } else {
-            Console.WriteLine("Connection to database failed.");
-        }
-
-        await _connection.CloseAsync();
-        */
-        await Task.Delay(-1);
+    private async Task MainAsync() {
+        using var ct = new CancellationTokenSource();
+        var task = Login(ct.Token);
+        var inputTask = ReadConsoleInputAsync(ct.Token);
+        await Task.WhenAny(task, inputTask);
+        ct.Cancel();
+        await inputTask.ContinueWith(_ => { });
+        await task;
     }
-    private char commandPrefix = '!'; // Add this line
-    private Task MessageReceivedAsync(SocketMessage message)
-    {
-        if (message is SocketUserMessage userMessage)
-        {
-            // Check for commands with the specified prefix character
-            if (userMessage.Content.StartsWith(commandPrefix.ToString()))
-            {
-                // Extract the command without the prefix character
-                string command = userMessage.Content.Substring(1).ToLower(); // Convert to lowercase for case-insensitive matching
 
-                // Check for specific commands
-                if (command == "getmessage")
-                {
-                    // Execute the "get message" command
-                    message.Channel.SendMessageAsync("You've used the get message command.");
-                    Console.WriteLine("Message has been sent");
-                }
+    private async Task ReadConsoleInputAsync(CancellationToken ct) {
+        var exit = "exit";
+        var help = "help";
+        var sel = 0;
+        while (!ct.IsCancellationRequested) {
+            var input = await Task.Run(Console.ReadLine);
 
+            if (input.ToLower() == exit) {
+                sel = 1;
+            }
+
+            if (input.ToLower() == help) {
+                sel = 2;
+            }
+
+            switch (sel) {
+                case 1:
+                    sel = 0;
+                    await Cleanup(-1);
+                    break;
+                case 2:
+                    Console.WriteLine("Help command is WIP, lol");
+                    break;
+                default:
+                    Console.WriteLine($"'{input}' is not recognized as an internal command. Try 'help' for more information.");
+                    sel = 0;
+                    break;
             }
         }
-        return Task.CompletedTask;
+    }
+
+    public async Task Login(CancellationToken ct) {
+        try {
+            var config = new DiscordSocketConfig();
+            config.MessageCacheSize = 2048;
+            config.AlwaysDownloadUsers = true;
+            config.GatewayIntents = GatewayIntents.All;
+            _client = new DiscordSocketClient(config);
+
+            _client.Log += Log;
+            RegisterSlashCommands();
+            
+            try {
+                var token = "MTE2ODQxOTkyMzc0NDI2MDIxOA.GSgNiK.R8-UmMyBc48oH1iy5HUlS3PXkviKnUSf9REJHA";
+                await _client.LoginAsync(TokenType.Bot, token);
+                await _client.StartAsync();
+            } catch (Exception ex) {
+                Console.WriteLine("Please ensure the token is valid...");
+                Console.WriteLine(ex.ToString());
+                await Cleanup(-1);
+            }
+
+            // Keep this task in limbo until the program is closed.
+            await Task.Delay(-1);
+        } catch (Exception ex) {
+            Console.WriteLine("Task Terminated");
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    private void RegisterSlashCommands() {
+        _client.Ready += async () => {
+            var _interactionService = new InteractionService(_client.Rest);
+            await _interactionService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
+
+            await _interactionService.RegisterCommandsGloballyAsync(false);
+            _client.InteractionCreated += async (x) => {
+                var ctx = new SocketInteractionContext(_client, x);
+                await _interactionService.ExecuteCommandAsync(ctx, null);
+            };
+        };
+    }
+
+    private async Task Cleanup(int exitCode) {
+        Console.WriteLine($"Shutting down with exit code {exitCode}...");
+        // Additional cleanup actions to go here as other functions are finished
+        Environment.Exit(exitCode);
+        await Task.CompletedTask;
     }
 }

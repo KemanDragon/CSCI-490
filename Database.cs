@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -7,200 +8,202 @@ using System.Threading.Tasks;
 using _490Bot.Handlers.ProfileHandler;
 using MySql.Data;
 using MySql.Data.MySqlClient;
-using MySqlX.XDevAPI.Common;
-using MySqlX.XDevAPI.Relational;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace _490Bot
-{
-    public class Database
-    {
-        private static String connectionString = "server=127.0.0.1;uid=root;pwd=root;database=CSCI-490";
-        private MySqlConnection _connection = new MySqlConnection(connectionString);
-        //private static String connectionString = "server=127.0.0.1;uid=root;pwd=W3$TEr45;database=LoggerClass";
-        public async void OpenConnection()
-        {
-            try
-            {
+namespace _490Bot {
+    public class Database {
+        private readonly MySqlConnection _connection = new("server=127.0.0.1;uid=root;pwd=root;database=CSCI-490");
+
+        public async Task OpenConnection() {
+            try {
                 await _connection.OpenAsync();
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
             }
         }
 
-        public async void CloseConnection()
-        {
-            try
-            {
+        public async Task CloseConnection() {
+            try {
                 await _connection.CloseAsync();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
             }
-            catch (Exception ex)
+        }
+
+        public async Task InsertBadge(Badge badge) {
+            try
+            {
+                await OpenConnection();
+                MySqlCommand query = new() { 
+                    CommandText = $"INSERT INTO badge VALUES({badge.BadgeName}, {badge.BadgeDesc}, {badge.BadgeIcon}, 0)",
+                    Connection = _connection
+                };
+                await query.ExecuteNonQueryAsync();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+
+            await CloseConnection();
+        }
+
+        public async Task InsertProfile(Profile profile) {
+            try {
+                await OpenConnection();
+                MySqlCommand query = new()
+                {
+                    CommandText = $"INSERT INTO profile VALUES({profile.UserID}, NULL, NULL, 1, 0, 100)",
+                    Connection = _connection
+                };
+                await query.ExecuteNonQueryAsync();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+
+            await CloseConnection();
+        }
+
+        public async Task InsertPermissions(ulong userID) {
+            try {
+                await OpenConnection();
+                MySqlCommand query = new() {
+                    CommandText = $"INSERT INTO Permissions VALUES({userID}, 1);",
+                    Connection = _connection
+                };
+                await query.ExecuteNonQueryAsync();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+            
+            await CloseConnection();
+        }
+
+        public async Task<Profile> GetProfile(ulong userID) {
+            Profile profile = new() {
+                UserID = userID
+            };
+            try {
+                await OpenConnection();
+                MySqlCommand query = new() {
+                    CommandText = $"SELECT * FROM Profile WHERE MemberID={userID};",
+                    Connection = _connection
+                };
+
+                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
+                while (await reader.ReadAsync()) {
+                    profile.StatusField = (string)reader["Status"];
+                    profile.AboutField = (string)reader["About"];
+                    profile.Level = (int)reader["Level"];
+                    profile.ExperienceCurrent = (int)reader["CurrentExp"];
+                    profile.ExperienceNeeded = (int)reader["NeededExp"];
+                }
+                await reader.CloseAsync();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+
+            await CloseConnection();
+            return profile;
+        }
+
+        public async Task<Badge> GetBadge(string badgeName) {
+            Badge badge = new() {
+                BadgeName = badgeName,
+                BadgeLevel = 0
+            };
+            try {
+                await OpenConnection();
+                MySqlCommand query = new() {
+                    CommandText = $"SELECT * FROM Badge WHERE BadgeName={badgeName};",
+                    Connection = _connection
+                };
+
+                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
+                while (await reader.ReadAsync()) {
+                    badge.BadgeDesc = (string)reader["BadgeDesc"];
+                    badge.BadgeIcon = (string)reader["BadgeIcon"];
+                }
+
+                await reader.CloseAsync();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+
+            await CloseConnection();
+            return badge;
+        }
+
+        public async Task<int> GetPermissionLevel(ulong userID) {
+            int level = 0;
+            try {
+                await OpenConnection();
+                MySqlCommand query = new() {
+                    CommandText = $"SELECT PermLevel FROM Permissions WHERE MemberID={userID};",
+                    Connection = _connection
+                };
+
+                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync(); {
+                    level = (int)reader["PermLevel"];
+                }
+                await reader.CloseAsync();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+
+            await CloseConnection();
+            return level;
+        }
+
+        public async Task UpdateProfile(Profile profile)
+        {
+            try
+            {
+                await OpenConnection();
+                MySqlCommand query = new()
+                {
+                    CommandText = $"UPDATE Profile SET Status={profile.StatusField}, About={profile.AboutField}, Level={profile.Level}, CurrentExp={profile.ExperienceCurrent}, NeededExp={profile.ExperienceNeeded} WHERE MemberID={profile.UserID};",
+                    Connection = _connection
+                };
+                await query.ExecuteNonQueryAsync();
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            await CloseConnection();
+        }
+
+        public async Task UpdateBadge(Badge badge)
+        {
+            try
+            {
+                await OpenConnection();
+                MySqlCommand query = new() {
+                    CommandText = $"UPDATE Badge SET BadgeDesc={badge.BadgeDesc}, BadgeIcon={badge.BadgeIcon} WHERE BadgeName={badge.BadgeName}",
+                    Connection = _connection
+                };
+                await query.ExecuteNonQueryAsync();
+            } catch(Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
         }
 
-        public int Insert(Badge badge)
+        public async Task UpdatePermissionLevel(ulong userID, int newPerm)
         {
-            int result = 0;
             try
             {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                String queryText = $"INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                query.Parameters.AddWithValue("@BadgeName", badge.BadgeName);
-                query.Parameters.AddWithValue("@BadgeDesc", badge.BadgeDesc);
-                query.Parameters.AddWithValue("@BadgeIcon", badge.BadgeIcon);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-
-            CloseConnection();
-            return result;
-        }
-
-        public int Insert(Profile profile)
-        {
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                String queryText = $"INSERT INTO badge VALUES(@BadgeName, @BadgeDesc, @BadgeIcon, 0)";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                //query.Parameters.AddWithValue("@BadgeName", profile.);
-                //query.Parameters.AddWithValue("@BadgeDesc", badge.BadgeDesc);
-                //query.Parameters.AddWithValue("@BadgeIcon", badge.BadgeIcon);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-
-            CloseConnection();
-            return result;
-        }
-
-        // Insert a log into the database
-        /*
-        public int Insert(Logs log)
-        {
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                string queryText = "INSERT INTO logs (UserID, LogID, LogLevel, LogMessage, Reason) VALUES (@UserID, @LogID, @LogLevel, @LogMessage, @Reason)";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                query.Parameters.AddWithValue("@UserID", log.UserID);
-                query.Parameters.AddWithValue("@LogID", log.LogID);
-                query.Parameters.AddWithValue("@LogLevel", log.LogLevel);
-                query.Parameters.AddWithValue("@LogMessage", log.LogMessage);
-                query.Parameters.AddWithValue("@Reason", log.Reason);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            CloseConnection();
-            return result;
-        }
-        */
-
-        // Retrieve logs based on UserID
-        /*
-        public List<Logs> RetrieveLogs()
-        {
-            List<Logs> logs = new List<Logs>();
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand("SELECT * FROM logs", _connection);
-                using (MySqlDataReader reader = query.ExecuteReader())
+                await OpenConnection();
+                MySqlCommand query = new()
                 {
-                    while (reader.Read())
-                    {
-                        Logs log = new Logs(
-                            (ulong)reader["UserID"],
-                            (ulong)reader["LogID"],
-                            reader["LogLevel"].ToString(),
-                            reader["LogMessage"].ToString(),
-                            reader["Reason"].ToString()
-                        );
-                        logs.Add(log);
-                    }
-                }
+                    CommandText = $"UPDATE Permissions SET PermLevel={newPerm} WHERE MemberID={userID}",
+                    Connection = _connection
+                };
+                await query.ExecuteNonQueryAsync();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(ex.ToString());
             }
 
-            CloseConnection();
-            return logs;
-        }
-
-
-
-        */
-
-        // Update a log based on LogID
-        /*
-        public int UpdateLog(Logs log)
-        {
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                string queryText = "UPDATE logs SET LogLevel = @LogLevel, LogMessage = @LogMessage, Reason = @Reason WHERE LogID = @LogID";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                query.Parameters.AddWithValue("@LogID", log.LogID);
-                query.Parameters.AddWithValue("@LogLevel", log.LogLevel);
-                query.Parameters.AddWithValue("@LogMessage", log.LogMessage);
-                query.Parameters.AddWithValue("@Reason", log.Reason);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            CloseConnection();
-            return result;
-        }
-        */
-        // Delete a log based on LogID
-        public int DeleteLog(ulong logId)
-        {
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                string queryText = "DELETE FROM logs WHERE LogID = @LogID";
-                query.CommandText = queryText;
-                query.Connection = _connection;
-                query.Parameters.AddWithValue("@LogID", logId);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            CloseConnection();
-            return result;
+            await CloseConnection();
         }
     }
 }
