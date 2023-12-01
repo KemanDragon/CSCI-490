@@ -5,10 +5,12 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Discord.Interactions;
+using _490Bot.Handlers.ProfileHandler;
 
 internal class Program {
     public static Task Main(string[] args) => new Program().MainAsync();
     private DiscordSocketClient _client;
+    private ProfileHandler _profileHandler;
 
     private Task Log(LogMessage msg) {
         Console.WriteLine(msg.ToString());
