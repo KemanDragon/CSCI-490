@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using System.IO;
 using System.Text;
 using Discord;
@@ -8,7 +9,7 @@ using Discord.WebSocket; //Since Discord bots use Sockets in order to be able to
 using MySql.Data.MySqlClient;
 
 
-namespace _490Bot.Handlers.LogHandler
+namespace _490Bot.Utilities
 {
     public class Logs
     {
@@ -29,11 +30,11 @@ namespace _490Bot.Handlers.LogHandler
     }
 
 
-    public sealed class DatabaseConnector
+    public class DatabaseConnector
     {
         IGuild server;
         MySqlConnection _connection;
-        // String connectionstring = "server=localhost;uid=root;pwd=root;database=LoggerClass";
+
         public DatabaseConnector()
         {
             _connection = new MySqlConnection("server=localhost;uid=root;pwd=root;database=LoggerClass");
@@ -69,7 +70,7 @@ namespace _490Bot.Handlers.LogHandler
             {
                 OpenConnection();
                 MySqlCommand query = new MySqlCommand();
-                String queryText = $"INSERT INTO logs VALUES(@UserID, @LogID, @LogLevel, @LogMessage, @Reason, 0)";
+                string queryText = $"INSERT INTO logs VALUES(@UserID, @LogID, @LogLevel, @LogMessage, @Reason, 0)";
                 query.CommandText = queryText;
                 query.Connection = _connection;
                 query.Parameters.AddWithValue("@UserID", logs.UserID);
@@ -93,19 +94,22 @@ namespace _490Bot.Handlers.LogHandler
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
-        
+        private readonly DatabaseConnector _dbConnector;
+
+
         public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
         {
             _client = client;
             _logger = logger;
             _client.Log += LogAsync;
-
+            _dbConnector = new DatabaseConnector();
 
             //Add event asyncs
             _client.UserBanned += UserBannedAsync;
             //_client.MessageReceived += MessageReceivedAsync;
             _client.MessageUpdated += MessageUpdatedAsync;
             _client.MessageDeleted += MessageDeletedAsync;
+
         }
 
         public ulong UserID { get; set; }
@@ -115,47 +119,76 @@ namespace _490Bot.Handlers.LogHandler
 
             Console.WriteLine(log);
 
-            //Logic to be added
             return Task.CompletedTask;
         }
 
         //OffensiveLanguageHandler
-        private void LogOffensiveLanguage(ulong authorId, string content) // Implement LogOffensiveLanguage
+        private void LogOffensiveLanguage(ulong authorId, string content)
         {
-            // logic to be added
+            // Create an instance of OffensiveLanguageDetector
+            var offensiveLanguageDetector = new OffensiveLanguageDetection.OffensiveLanguageDetector();
+
+            // Check if the content contains offensive language
+            if (offensiveLanguageDetector.ContainsOffensiveLanguage(content))
+            {
+                // Create a log for offensive language
+                Logs log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
+
+                // Insert the log into the database
+                _dbConnector.Insert(log);
+
+
+            }
         }
 
         //DeletionEditHandler
-        private Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
+        private async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
         {
-            // Log message edits here using _logger.LogDeletionEdit
+            // Check if the message content was changed
+            if (before.HasValue && after.Content != before.Value.Content)
+            {
+                // Create a new instance of Logs with the relevant information
+                Logs log = new Logs(after.Author.Id, after.Id, "MessageUpdated", $"Message updated in channel {channel.Id}", "Content changed");
+
+                // Insert the log into the database
+                _dbConnector.Insert(log);
+
+            }
+
+            //return Task.CompletedTask;
+        }
+
+        private async Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
+        {
+            // Create a new instance of Logs with the relevant information
+            Logs log = new Logs(message.Value.Author.Id, message.Id, "MessageDeleted", $"Message deleted in channel {channel.Id}", "No specific reason");
+
+            // Insert the log into the database
+            _dbConnector.Insert(log);
+
             return Task.CompletedTask;
         }
 
-        private Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
-        {
-            // Log message deletions here using _logger.LogDeletionEdit
-            return Task.CompletedTask;
-        }
-    
 
 
 
-        private Task UserBannedAsync(SocketUser user, SocketGuild guild)
-        {
-            LogBannedUser(user.Id, guild.Id, "Reason not available");
-            return Task.CompletedTask;
-        }
+
 
         //BannedUserHandler
-        private void LogBannedUser(ulong UserId, ulong guildId, string reason) // _client will use this handler since
-                                                                               // this is essentially the BannedUserHandler
+        private async Task UserBannedAsync(SocketUser user, SocketGuild guild)
         {
-            //_logger.LogBannedUser(user.Id, guild.Id, reason); //Log user that got banned, the guild they were bannded from,
-            // and the reason for which the user was banned.
-            // return Task.CompletedTask; //Task has been completed.
+            string reason = "Reason not available";
+            await LogBannedUser(user.Id, guild.Id, reason);
         }
-    
+
+        private async Task LogBannedUser(ulong userId, ulong guildId, string reason)
+        {
+            Logs logs = new Logs(userId, 0, "BAN", $"User {userId} banned from guild {guildId}. Reason: {reason}", reason);
+            _dbConnector.Insert(logs);
+
+        }
+
+
     }
 
 }
