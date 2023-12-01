@@ -29,22 +29,6 @@ namespace _490Bot {
             }
         }
 
-        public async Task InsertBadge(Badge badge) {
-            try
-            {
-                await OpenConnection();
-                MySqlCommand query = new() { 
-                    CommandText = $"INSERT INTO badge VALUES({badge.BadgeName}, {badge.BadgeDesc}, {badge.BadgeIcon}, 0)",
-                    Connection = _connection
-                };
-                await query.ExecuteNonQueryAsync();
-            } catch (Exception ex) {
-                Console.WriteLine(ex.ToString());
-            }
-
-            await CloseConnection();
-        }
-
         public async Task InsertProfile(Profile profile) {
             try {
                 await OpenConnection();
@@ -104,33 +88,6 @@ namespace _490Bot {
             return profile;
         }
 
-        public async Task<Badge> GetBadge(string badgeName) {
-            Badge badge = new() {
-                BadgeName = badgeName,
-                BadgeLevel = 0
-            };
-            try {
-                await OpenConnection();
-                MySqlCommand query = new() {
-                    CommandText = $"SELECT * FROM Badge WHERE BadgeName={badgeName};",
-                    Connection = _connection
-                };
-
-                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
-                while (await reader.ReadAsync()) {
-                    badge.BadgeDesc = (string)reader["BadgeDesc"];
-                    badge.BadgeIcon = (string)reader["BadgeIcon"];
-                }
-
-                await reader.CloseAsync();
-            } catch (Exception ex) {
-                Console.WriteLine(ex.ToString());
-            }
-
-            await CloseConnection();
-            return badge;
-        }
-
         public async Task<int> GetPermissionLevel(ulong userID) {
             int level = 0;
             try {
@@ -168,22 +125,6 @@ namespace _490Bot {
                 Console.WriteLine(ex.ToString());
             }
             await CloseConnection();
-        }
-
-        public async Task UpdateBadge(Badge badge)
-        {
-            try
-            {
-                await OpenConnection();
-                MySqlCommand query = new() {
-                    CommandText = $"UPDATE Badge SET BadgeDesc={badge.BadgeDesc}, BadgeIcon={badge.BadgeIcon} WHERE BadgeName={badge.BadgeName}",
-                    Connection = _connection
-                };
-                await query.ExecuteNonQueryAsync();
-            } catch(Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
         }
 
         public async Task UpdatePermissionLevel(ulong userID, int newPerm)
