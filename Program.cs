@@ -68,6 +68,7 @@ internal class Program {
             config.GatewayIntents = GatewayIntents.All;
             _client = new DiscordSocketClient(config);
 
+            _client.MessageReceived += MessageReceived;
             _client.Log += Log;
             RegisterSlashCommands();
             
@@ -110,26 +111,13 @@ internal class Program {
     }
 
     private char commandPrefix = '!'; // Add this line
-    private Task MessageReceivedAsync(SocketMessage message)
+    private async Task MessageReceived(SocketMessage arg)
     {
-        if (message is SocketUserMessage userMessage)
-        {
-            // Check for commands with the specified prefix character
-            if (userMessage.Content.StartsWith(commandPrefix.ToString()))
-            {
-                // Extract the command without the prefix character
-                string command = userMessage.Content.Substring(1).ToLower(); // Convert to lowercase for case-insensitive matching
+        if (arg is not SocketUserMessage message || message.Author.IsBot) return;
 
-                // Check for specific commands
-                if (command == "getmessage")
-                {
-                    // Execute the "get message" command
-                    message.Channel.SendMessageAsync("You've used the get message command.");
-                    Console.WriteLine("Message has been sent");
-                }
-
-            }
-        }
-        return Task.CompletedTask;
+        string messageContent = message.Content;
+        string responseMessage = $"Message received:{messageContent}";
+        var reply = new MessageReference(message.Id);
+        await message.Channel.SendMessageAsync(responseMessage, false, null, null, null, reply);
     }
 }
