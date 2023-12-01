@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 using Discord;
 using Discord.Interactions;
+using _490Bot.Utilities;
 
-using _490Bot;
-
-namespace _490Bot.Handlers {
+namespace _490Bot.Handlers
+{
     public class ProfileHandler {
         public IGuild Server { get; set; }
         private Profile _profile;
