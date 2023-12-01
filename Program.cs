@@ -6,7 +6,7 @@ using Discord.WebSocket;
 using Discord.Interactions;
 
 using _490Bot.Handlers.ProfileHandler;
-using _490Bot.Handlers.LogHandler;
+using _490Bot.Utilities;
 
 internal class Program {
     public static Task Main(string[] args) => new Program().MainAsync();
