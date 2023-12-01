@@ -12,28 +12,40 @@ using MySql.Data.MySqlClient;
 using _490Bot.Handlers;
 using _490Bot.Utilities;
 
-namespace _490Bot {
-    public class Database {
+namespace _490Bot.Utilities
+{
+    public class Database
+    {
         private readonly MySqlConnection _connection = new("server=127.0.0.1;uid=root;pwd=root;database=CSCI-490");
 
-        public async Task OpenConnection() {
-            try {
+        public async Task OpenConnection()
+        {
+            try
+            {
                 await _connection.OpenAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
         }
 
-        public async Task CloseConnection() {
-            try {
+        public async Task CloseConnection()
+        {
+            try
+            {
                 await _connection.CloseAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
         }
 
-        public async Task InsertProfile(Profile profile) {
-            try {
+        public async Task InsertProfile(Profile profile)
+        {
+            try
+            {
                 await OpenConnection();
                 MySqlCommand query = new()
                 {
@@ -41,49 +53,64 @@ namespace _490Bot {
                     Connection = _connection
                 };
                 await query.ExecuteNonQueryAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
 
             await CloseConnection();
         }
 
-        public async Task InsertPermissions(ulong userID) {
-            try {
+        public async Task InsertPermissions(ulong userID)
+        {
+            try
+            {
                 await OpenConnection();
-                MySqlCommand query = new() {
+                MySqlCommand query = new()
+                {
                     CommandText = $"INSERT INTO Permissions VALUES({userID}, 1);",
                     Connection = _connection
                 };
                 await query.ExecuteNonQueryAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
-            
+
             await CloseConnection();
         }
 
-        public async Task<Profile> GetProfile(ulong userID) {
-            Profile profile = new() {
+        public async Task<Profile> GetProfile(ulong userID)
+        {
+            Profile profile = new()
+            {
                 UserID = userID
             };
-            try {
+            try
+            {
                 await OpenConnection();
-                MySqlCommand query = new() {
+                MySqlCommand query = new()
+                {
                     CommandText = $"SELECT * FROM Profile WHERE MemberID={userID};",
                     Connection = _connection
                 };
 
                 MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
-                while (await reader.ReadAsync()) {
+                while (await reader.ReadAsync())
+                {
                     profile.StatusField = (string)reader["Status"];
                     profile.AboutField = (string)reader["About"];
                     profile.Level = (int)reader["Level"];
                     profile.ExperienceCurrent = (int)reader["CurrentExp"];
                     profile.ExperienceNeeded = (int)reader["NeededExp"];
+                    profile.Color = (string)reader["Color"];
                 }
                 await reader.CloseAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
 
@@ -91,20 +118,26 @@ namespace _490Bot {
             return profile;
         }
 
-        public async Task<int> GetPermissionLevel(ulong userID) {
+        public async Task<int> GetPermissionLevel(ulong userID)
+        {
             int level = 0;
-            try {
+            try
+            {
                 await OpenConnection();
-                MySqlCommand query = new() {
+                MySqlCommand query = new()
+                {
                     CommandText = $"SELECT PermLevel FROM Permissions WHERE MemberID={userID};",
                     Connection = _connection
                 };
 
-                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync(); {
+                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
+                {
                     level = (int)reader["PermLevel"];
                 }
                 await reader.CloseAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
 
@@ -119,11 +152,12 @@ namespace _490Bot {
                 await OpenConnection();
                 MySqlCommand query = new()
                 {
-                    CommandText = $"UPDATE Profile SET Status={profile.StatusField}, About={profile.AboutField}, Level={profile.Level}, CurrentExp={profile.ExperienceCurrent}, NeededExp={profile.ExperienceNeeded} WHERE MemberID={profile.UserID};",
+                    CommandText = $"UPDATE Profile SET Status={profile.StatusField}, About={profile.AboutField}, Level={profile.Level}, CurrentExp={profile.ExperienceCurrent}, NeededExp={profile.ExperienceNeeded}, Color={profile.Color} WHERE MemberID={profile.UserID};",
                     Connection = _connection
                 };
                 await query.ExecuteNonQueryAsync();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
