@@ -1,7 +1,7 @@
 using MySql.Data.MySqlClient;
 using System;
 
-namespace dataBasee{
+namespace dataBase{
         public class Database
         {
             private readonly string _connectionString;
@@ -11,18 +11,16 @@ namespace dataBasee{
                 _connectionString = connectionString;
             }
             
-            public bool InsertLog(string userID, string userName, string message, DateTime timeStamp)
+            public bool InsertLog(string userID, DateTime timeStamp)
             {
                 using (MySqlConnection connection = new MySqlConnection(_connectionString))
                 {
                     try
                     {
                         connection.Open();
-                        string sql = "INSERT INTO userLog (userID, userName, message, timeStamp) VALUES (@userID, @userName, @message, @timeStamp)";
+                        string sql = "INSERT INTO userLog (userID, timeStamp) VALUES (@_userID, @timeStamp)";
                         MySqlCommand cmd = new MySqlCommand(sql, connection);
-                        cmd.Parameters.AddWithValue("@userID", userID);
-                        cmd.Parameters.AddWithValue("@userName", userName);
-                        cmd.Parameters.AddWithValue("@message", message);
+                        cmd.Parameters.AddWithValue("@_userID", userID);
                         cmd.Parameters.AddWithValue("@timeStamp", timeStamp);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
