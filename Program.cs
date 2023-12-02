@@ -120,4 +120,49 @@ internal class Program {
         var reply = new MessageReference(message.Id);
         await message.Channel.SendMessageAsync(responseMessage, false, null, null, null, reply);
     }
+
+    namespace dataBase {
+                
+            
+            private async Task muteDatabase()
+        {
+
+            // connection string for database
+            string connectionString = "Server=127.0.0.1;Database=muteLogs;User=root;Password=jjhindsj";
+            _database = new Database(connectionString);
+
+            // creates instance of Profile to log mute 
+            Profile userProfileID = new Profile();
+            string _userID = userProfileID.UserID.ToString();
+            DateTime timeStamp = DateTime.Now;
+
+            if (_database.InsertLog(userID,timeStamp))
+            {
+                Console.WriteLine("Database connection successful.");
+            }
+            else
+            {
+                Console.WriteLine("Database connection failed.");
+                return;
+            }
+             
+            
+            
+         return Task.CompletedTask;   
+        }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
