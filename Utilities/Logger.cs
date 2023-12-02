@@ -29,7 +29,7 @@ namespace _490Bot.Utilities
         }
     }
 
-
+    /*
     public class DatabaseConnector
     {
         IGuild server;
@@ -66,14 +66,22 @@ namespace _490Bot.Utilities
 
         
     }
-
+    */
+    
     public class Logger
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
         private readonly Database _dbConnector;
 
+        public Logger(Database dbConnector)
+        {
+            _dbConnector = dbConnector;
+        }
+        
 
+
+        /*
         public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
         {
             _client = client;
@@ -88,9 +96,10 @@ namespace _490Bot.Utilities
             //_client.MessageDeleted += MessageDeletedAsync;
 
         }
+        */
+        //public ulong UserID { get; set; }
 
-        public ulong UserID { get; set; }
-
+        /*
         private Task LogAsync(LogMessage log)
         {
 
@@ -98,7 +107,7 @@ namespace _490Bot.Utilities
 
             return Task.CompletedTask;
         }
-
+        */
         /*
         //OffensiveLanguageHandler
         private void LogOffensiveLanguage(ulong authorId, string content)
