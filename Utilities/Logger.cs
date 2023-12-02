@@ -34,11 +34,12 @@ namespace _490Bot.Utilities
     {
         IGuild server;
         MySqlConnection _connection;
-
+        
         public DatabaseConnector()
         {
             _connection = new MySqlConnection("server=localhost;uid=root;pwd=root;database=LoggerClass");
         }
+        
         public async void OpenConnection()
         {
             try
@@ -70,7 +71,7 @@ namespace _490Bot.Utilities
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
-        private readonly DatabaseConnector _dbConnector;
+        private readonly Database _dbConnector;
 
 
         public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
@@ -78,13 +79,13 @@ namespace _490Bot.Utilities
             _client = client;
             _logger = logger;
             _client.Log += LogAsync;
-            _dbConnector = new DatabaseConnector();
+            _dbConnector = new Database();
 
             //Add event asyncs
-            _client.UserBanned += UserBannedAsync;
+            //_client.UserBanned += UserBannedAsync;
             //_client.MessageReceived += MessageReceivedAsync;
-            _client.MessageUpdated += MessageUpdatedAsync;
-            _client.MessageDeleted += MessageDeletedAsync;
+            //_client.MessageUpdated += MessageUpdatedAsync;
+            //_client.MessageDeleted += MessageDeletedAsync;
 
         }
 
@@ -118,7 +119,7 @@ namespace _490Bot.Utilities
             }
         }
         */
-        
+        /*
         //DeletionEditHandler
         private async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
         {
@@ -135,7 +136,7 @@ namespace _490Bot.Utilities
 
             //return Task.CompletedTask;
         }
-
+        
         
         private async Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
         {
@@ -148,11 +149,11 @@ namespace _490Bot.Utilities
             //return Task.CompletedTask;
         }
         
+        */
 
 
 
-
-        
+        /*
         //BannedUserHandler
         private async Task UserBannedAsync(SocketUser user, SocketGuild guild)
         {
@@ -167,7 +168,7 @@ namespace _490Bot.Utilities
 
         }
 
-        
+        */
     }
 
 }
