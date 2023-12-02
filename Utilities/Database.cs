@@ -209,5 +209,51 @@ namespace _490Bot.Utilities
             CloseConnection();
             return result;
         }
+
+         
+
+        
+
+        private string connectionString = "Server=127.0.0.1;Database=muteLogs;User=root;Password=jjhindsj";
+         
+         
+        public bool InsertLog(string userID, string userName, DateTime timeStamp)
+            {
+                
+                using (MySqlConnection connection = new MySqlConnection(connectionString))///
+                {
+                    try
+                    {
+                        connection.Open();
+                        string sql = "INSERT INTO userLog (userID, userName, timeStamp) VALUES (@userID, @userName, @timeStamp)";
+                        MySqlCommand cmd = new MySqlCommand(sql, connection);
+                        cmd.Parameters.AddWithValue("@userID", userID);
+                        cmd.Parameters.AddWithValue("@userName", userName);
+                        cmd.Parameters.AddWithValue("@timeStamp", timeStamp);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        Console.WriteLine($"{rowsAffected} row(s) inserted.");
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error: {ex.Message}");
+                        return false;
+                    }
+                    finally{
+                        connection.Close();
+                    }
+
+
+
+                } 
+            }
+
+
+
+
+
+
     }
 }

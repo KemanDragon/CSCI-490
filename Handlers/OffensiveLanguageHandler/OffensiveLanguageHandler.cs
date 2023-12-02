@@ -12,7 +12,7 @@ namespace _490Bot.Handlers.OffensiveLanguageHandler
     internal class OffensiveLanguageHandler
     {
         private readonly Database _dbConnector;
-        _dbConnector = new Database();
+        //_dbConnector = new Database();
         //OffensiveLanguageHandler
         private void LogOffensiveLanguage(ulong authorId, string content)
         {
