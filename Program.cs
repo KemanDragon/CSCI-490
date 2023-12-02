@@ -5,7 +5,7 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Interactions;
 
-using _490Bot.Handlers.ProfileHandler;
+using _490Bot.Handlers;
 using _490Bot.Utilities;
 
 internal class Program {

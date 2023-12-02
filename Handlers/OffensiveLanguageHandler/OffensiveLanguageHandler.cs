@@ -4,20 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using _490Bot.Utilities;
+
 
 namespace _490Bot.Handlers.OffensiveLanguageHandler
 {
    
     internal class OffensiveLanguageHandler
     {
-        private readonly Database _dbConnector;
-        _dbConnector = new Database();
+        private readonly Database _dbConnector = new();
+        //_dbConnector = new Database();
         //OffensiveLanguageHandler
         private void LogOffensiveLanguage(ulong authorId, string content)
         {
             // Create an instance of OffensiveLanguageDetector
-            var offensiveLanguageDetector = new OffensiveLanguageDetection.OffensiveLanguageDetector();
+            var offensiveLanguageDetector = new OffensiveLanguageDetector();
 
             // Check if the content contains offensive language
             if (offensiveLanguageDetector.ContainsOffensiveLanguage(content))

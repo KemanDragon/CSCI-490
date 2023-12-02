@@ -98,11 +98,12 @@ namespace _490Bot.Utilities
             return Task.CompletedTask;
         }
 
+        /*
         //OffensiveLanguageHandler
         private void LogOffensiveLanguage(ulong authorId, string content)
         {
             // Create an instance of OffensiveLanguageDetector
-            var offensiveLanguageDetector = new OffensiveLanguageDetection.OffensiveLanguageDetector();
+            var offensiveLanguageDetector = new OffensiveLanguageDetector();
 
             // Check if the content contains offensive language
             if (offensiveLanguageDetector.ContainsOffensiveLanguage(content))
@@ -111,12 +112,13 @@ namespace _490Bot.Utilities
                 Logs log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
 
                 // Insert the log into the database
-                _dbConnector.Insert(log);
+                //_dbConnector.Insert(log);
 
 
             }
         }
-
+        */
+        
         //DeletionEditHandler
         private async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
         {
@@ -127,29 +129,30 @@ namespace _490Bot.Utilities
                 Logs log = new Logs(after.Author.Id, after.Id, "MessageUpdated", $"Message updated in channel {channel.Id}", "Content changed");
 
                 // Insert the log into the database
-                _dbConnector.Insert(log);
+                //_dbConnector.Insert(log);
 
             }
 
             //return Task.CompletedTask;
         }
 
+        
         private async Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
         {
             // Create a new instance of Logs with the relevant information
             Logs log = new Logs(message.Value.Author.Id, message.Id, "MessageDeleted", $"Message deleted in channel {channel.Id}", "No specific reason");
 
             // Insert the log into the database
-            _dbConnector.Insert(log);
+            //_dbConnector.Insert(log);
 
             //return Task.CompletedTask;
         }
+        
 
 
 
 
-
-
+        
         //BannedUserHandler
         private async Task UserBannedAsync(SocketUser user, SocketGuild guild)
         {
@@ -160,11 +163,11 @@ namespace _490Bot.Utilities
         private async Task LogBannedUser(ulong userId, ulong guildId, string reason)
         {
             Logs logs = new Logs(userId, 0, "BAN", $"User {userId} banned from guild {guildId}. Reason: {reason}", reason);
-            _dbConnector.Insert(logs);
+            //_dbConnector.Insert(logs);
 
         }
 
-
+        
     }
 
 }
