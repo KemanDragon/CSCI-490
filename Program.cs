@@ -8,18 +8,43 @@ using Discord.Interactions;
 using _490Bot.Handlers;
 using _490Bot.Utilities;
 
-internal class Program {
+internal class Program 
+{
     public static Task Main(string[] args) => new Program().MainAsync();
     private DiscordSocketClient _client;
-    private Lazy<ProfileHandler> _profileHandler;
+    private ProfileHandler _profileHandler = new();
 
     private Logger _logger;
-    private Task Log(LogMessage msg) {
-        Console.WriteLine(msg.ToString());
+    private Task Log(LogMessage msg) 
+    {
+        var translateLevel = msg.Severity;
+        switch(translateLevel)
+        {
+            case LogSeverity.Info: 
+                Console.WriteLine($"[INFO] {msg.ToString()}");
+                break;
+            case LogSeverity.Verbose:
+                Console.WriteLine($"[VERBOSE] {msg.ToString()}");
+                break;
+            case LogSeverity.Warning:
+                Console.WriteLine($"[WARNING] {msg.ToString()}");
+                break;
+            case LogSeverity.Error:
+                Console.WriteLine($"[ERROR] {msg.ToString()}");
+                break;
+            case LogSeverity.Critical:
+                Console.WriteLine($"[CRITICAL] {msg.ToString()}");
+                break;
+            default:
+                Console.WriteLine($"Unable to log a gateway level: {msg.ToString()}");
+                break;
+        }
+
         return Task.CompletedTask;
     }
 
-    private async Task MainAsync() {
+    private async Task MainAsync() 
+    {
         using var ct = new CancellationTokenSource();
         var task = Login(ct.Token);
         var inputTask = ReadConsoleInputAsync(ct.Token);
@@ -29,22 +54,27 @@ internal class Program {
         await task;
     }
 
-    private async Task ReadConsoleInputAsync(CancellationToken ct) {
+    private async Task ReadConsoleInputAsync(CancellationToken ct) 
+    {
         var exit = "exit";
         var help = "help";
         var sel = 0;
-        while (!ct.IsCancellationRequested) {
+        while (!ct.IsCancellationRequested) 
+        {
             var input = await Task.Run(Console.ReadLine);
 
-            if (input.ToLower() == exit) {
+            if (input.ToLower() == exit) 
+            {
                 sel = 1;
             }
 
-            if (input.ToLower() == help) {
+            if (input.ToLower() == help) 
+            {
                 sel = 2;
             }
 
-            switch (sel) {
+            switch (sel) 
+            {
                 case 1:
                     sel = 0;
                     await Cleanup(-1);
@@ -60,23 +90,32 @@ internal class Program {
         }
     }
 
-    public async Task Login(CancellationToken ct) {
-        try {
-            var config = new DiscordSocketConfig();
-            config.MessageCacheSize = 2048;
-            config.AlwaysDownloadUsers = true;
-            config.GatewayIntents = GatewayIntents.All;
+    public async Task Login(CancellationToken ct) 
+    {
+        try 
+        {
+            var config = new DiscordSocketConfig
+            {
+                MessageCacheSize = 2048,
+                AlwaysDownloadUsers = true,
+                GatewayIntents = GatewayIntents.All
+            };
             _client = new DiscordSocketClient(config);
 
             _client.MessageReceived += MessageReceived;
+            _client.MessageDeleted += _logger.MessageDeletedAsync;
+            
             _client.Log += Log;
             RegisterSlashCommands();
             
-            try {
+            try 
+            {
                 var token = "MTE2ODQxOTkyMzc0NDI2MDIxOA.GSgNiK.R8-UmMyBc48oH1iy5HUlS3PXkviKnUSf9REJHA";
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine("Please ensure the token is valid...");
                 Console.WriteLine(ex.ToString());
                 await Cleanup(-1);
@@ -84,14 +123,18 @@ internal class Program {
 
             // Keep this task in limbo until the program is closed.
             await Task.Delay(-1, ct);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             Console.WriteLine("Task Terminated");
             Console.WriteLine(ex.ToString());
         }
     }
 
-    private void RegisterSlashCommands() {
-        _client.Ready += async () => {
+    private void RegisterSlashCommands() 
+    {
+        _client.Ready += async () => 
+        {
             var _interactionService = new InteractionService(_client.Rest);
             await _interactionService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
 
@@ -103,7 +146,18 @@ internal class Program {
         };
     }
 
-    private async Task Cleanup(int exitCode) {
+    public async Task UserJoined(SocketGuildUser arg)
+    {
+        await _profileHandler.SetProfile(arg);
+    }
+
+    public async Task MessageReceived(SocketMessage arg)
+    {
+        if (arg is not SocketUserMessage message || message.Author.IsBot) return;
+    }
+
+    private async Task Cleanup(int exitCode) 
+    {
         Console.WriteLine($"Shutting down with exit code {exitCode}...");
         // Additional cleanup actions to go here as other functions are finished
         Environment.Exit(exitCode);
@@ -111,13 +165,4 @@ internal class Program {
     }
 
     private char commandPrefix = '!'; // Add this line
-    private async Task MessageReceived(SocketMessage arg)
-    {
-        if (arg is not SocketUserMessage message || message.Author.IsBot) return;
-
-        string messageContent = message.Content;
-        string responseMessage = $"Message received:{messageContent}";
-        var reply = new MessageReference(message.Id);
-        await message.Channel.SendMessageAsync(responseMessage, false, null, null, null, reply);
-    }
 }

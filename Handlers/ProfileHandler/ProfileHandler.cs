@@ -5,30 +5,37 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Discord;
-using Discord.Interactions;
+using Discord.WebSocket;
+
 using _490Bot.Utilities;
 
 namespace _490Bot.Handlers
 {
-    public class ProfileHandler {
+    public class ProfileHandler 
+    {
         public IGuild Server { get; set; }
         private Profile _profile;
         private readonly Database _database = new();
       
-        public Profile Profile { 
+        public Profile Profile 
+        { 
             get { return _profile; }
             set { _profile = value; }
         }
-        public async Task<Profile> GetProfile(ulong uid) {
+        public async Task<Profile> GetProfile(ulong uid) 
+        {
             _profile = await _database.GetProfile(uid);
             return _profile;
         }
 
-        public async Task SetProfile (ulong uid)
+        public async Task SetProfile (SocketGuildUser arg)
         {
             _profile = new()
             {
-                UserID = uid,
+                UserID = arg.Id,
+                Username = arg.Username,
+                Name = arg.DisplayName,
+                DateJoined = TimestampTag.FromDateTimeOffset(arg.JoinedAt.GetValueOrDefault(), TimestampTagStyles.LongDate),
                 StatusField = "",
                 AboutField = "",
                 ExperienceCurrent = 0,
@@ -39,19 +46,28 @@ namespace _490Bot.Handlers
             await _database.InsertProfile(_profile);
         }
 
-        public async void UpdateStatus(String newStatus) {
+        public async void UpdateStatus(String newStatus) 
+        {
             _profile.StatusField = newStatus;
             await _database.UpdateProfile(_profile);
         }
 
-        public async void UpdateAbout(String newAbout) {
+        public async void UpdateAbout(String newAbout) 
+        {
             _profile.AboutField = newAbout;
             await _database.UpdateProfile(_profile);
         }
 
-        public async void UpdateColor(String hexCode) {
+        public async void UpdateColor(String hexCode) 
+        {
             _profile.Color = hexCode;
             await _database.UpdateProfile(_profile);
+        }
+
+        public async void PrintProfile(ulong userID)
+        {
+            _profile = await _database.GetProfile(userID);
+
         }
     }
 }
