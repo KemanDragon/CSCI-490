@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 
 using _490Bot.Handlers;
+using _490Bot.Utilities;
 
 namespace _490Bot.Utilities
 {
@@ -172,6 +173,32 @@ namespace _490Bot.Utilities
             }
 
             await CloseConnection();
+        }
+
+        public int Insert(Logs logs)
+        {
+            int result = 0;
+            try
+            {
+                OpenConnection();
+                MySqlCommand query = new MySqlCommand();
+                string queryText = $"INSERT INTO logs VALUES(@UserID, @LogID, @LogLevel, @LogMessage, @Reason, 0)";
+                query.CommandText = queryText;
+                query.Connection = _connection;
+                query.Parameters.AddWithValue("@UserID", logs.UserID);
+                query.Parameters.AddWithValue("@LogID", logs.LogID);
+                query.Parameters.AddWithValue("@LogLevel", logs.LogLevel);
+                query.Parameters.AddWithValue("@LogMessage", logs.LogMessage);
+                query.Parameters.AddWithValue("@Reason", logs.Reason);
+                result = query.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
+            CloseConnection();
+            return result;
         }
     }
 }
