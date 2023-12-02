@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-
-using MySql.Data;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 
 using _490Bot.Handlers;
 

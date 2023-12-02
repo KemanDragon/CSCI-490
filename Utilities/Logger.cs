@@ -158,21 +158,14 @@ namespace _490Bot.Utilities
             //return Task.CompletedTask;
         }
 
-        private async Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
+        public async Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
         {
             // Create a new instance of Logs with the relevant information
             Logs log = new Logs(message.Value.Author.Id, message.Id, "MessageDeleted", $"Message deleted in channel {channel.Id}", "No specific reason");
 
             // Insert the log into the database
             _dbConnector.Insert(log);
-
-            return Task.CompletedTask;
         }
-
-
-
-
-
 
         //BannedUserHandler
         private async Task UserBannedAsync(SocketUser user, SocketGuild guild)

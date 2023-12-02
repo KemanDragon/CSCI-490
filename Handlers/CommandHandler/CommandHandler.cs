@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 
-namespace _490Bot.Handlers.CommandHandler {
+namespace _490Bot.Handlers {
     public class CommandHandler {
         public SlashCommandBuilder CommandRegister { get; set; }
     }
