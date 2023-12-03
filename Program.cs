@@ -18,7 +18,7 @@ internal class Program
     static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
     private DiscordSocketClient _client;
     private ProfileHandler _profileHandler = new();
-    private Logger _logger;
+    private Logger _logger = new();
     private CommandService _commands;
     private IServiceProvider _services;
 
@@ -111,10 +111,12 @@ internal class Program
             _commands = new();
             _services = new ServiceCollection().BuildServiceProvider();
 
+
+            
             _client.MessageReceived += MessageReceived;
-            _client.MessageDeleted += _logger.MessageDeletedAsync;
-            _client.MessageUpdated += _logger.MessageUpdatedAsync;
-            _client.UserBanned += _logger.LogBannedUserAsync;
+            //_client.MessageDeleted += _logger.MessageDeletedAsync;
+            //_client.MessageUpdated += _logger.MessageUpdatedAsync;
+            //_client.UserBanned += _logger.LogBannedUserAsync;
             
             _client.Log += Log;
             RegisterSlashCommands();
