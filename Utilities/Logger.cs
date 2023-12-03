@@ -29,7 +29,7 @@ namespace _490Bot.Utilities
         }
     }
 
-
+    /*
     public class DatabaseConnector
     {
         IGuild server;
@@ -66,14 +66,69 @@ namespace _490Bot.Utilities
 
         
     }
-
+    */
+    
     public class Logger
     {
         private readonly DiscordSocketClient _client;
         private Logger _logger;
         private readonly Database _dbConnector;
 
+        public Logger(Database dbConnector)
+        {
+            _dbConnector = dbConnector;
+        }
 
+        
+
+        public async Task LogOffensiveLanguageAsync(ulong authorId, string content)
+        {
+            // Create a log for offensive language
+            var log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
+
+            // Insert the log into the database
+            _dbConnector.Insert(log);
+        }
+
+        public async Task LogBannedUserAsync(ulong userId, string reason)
+        {
+            // Create a log for banned user
+            var log = new Logs(userId, 0, "UserBanned", $"User {userId} banned. Reason: {reason}", reason);
+
+            // Insert the log into the database
+            await _dbConnector.Insert(log);
+        }
+
+        public async Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
+        {
+            if (message.HasValue && message.Value is SocketUserMessage userMessage)
+            {
+                await LogDeletionOrEditAsync("Message Deleted", userMessage);
+            }
+        }
+
+        public async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, Cacheable<IMessage, ulong> after, Cacheable<IMessageChannel, ulong> channel)
+        {
+            if (after.HasValue && after.Value is SocketUserMessage userMessage)
+            {
+                await LogDeletionOrEditAsync("Message Updated", userMessage);
+            }
+        }
+
+        private async Task LogDeletionOrEditAsync(string action, SocketUserMessage message)
+        {
+            // Extract necessary information from the message
+            var messageId = message.Id;
+            var content = message.Content;
+
+            // Create a log for message deletion or update
+            var log = new Logs(0, messageId, "DeletionEdit", $"{action} - Message ID: {messageId}", content);
+
+            // Insert the log into the database
+            await _dbConnector.Insert(log);
+        }
+
+        /*
         public Logger(DiscordSocketClient client, Logger logger) // Pass the DiscordSocketClient as a parameter
         {
             _client = client;
@@ -88,9 +143,10 @@ namespace _490Bot.Utilities
             //_client.MessageDeleted += MessageDeletedAsync;
 
         }
+        */
+        //public ulong UserID { get; set; }
 
-        public ulong UserID { get; set; }
-
+        /*
         private Task LogAsync(LogMessage log)
         {
 
@@ -98,7 +154,7 @@ namespace _490Bot.Utilities
 
             return Task.CompletedTask;
         }
-
+        */
         /*
         //OffensiveLanguageHandler
         private void LogOffensiveLanguage(ulong authorId, string content)

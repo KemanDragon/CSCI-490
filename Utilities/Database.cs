@@ -175,30 +175,34 @@ namespace _490Bot.Utilities
             await CloseConnection();
         }
 
-        public int Insert(Logs logs)
+        public async Task Insert(Logs logs)
         {
-            int result = 0;
             try
             {
-                OpenConnection();
-                MySqlCommand query = new MySqlCommand();
-                string queryText = $"INSERT INTO logs VALUES(@UserID, @LogID, @LogLevel, @LogMessage, @Reason, 0)";
-                query.CommandText = queryText;
-                query.Connection = _connection;
+                await OpenConnection();
+                using MySqlCommand query = new MySqlCommand
+                {
+                    CommandText = "INSERT INTO logs (UserID, LogID, LogLevel, LogMessage, Reason, SomeOtherColumn) " +
+                                  "VALUES (@UserID, @LogID, @LogLevel, @LogMessage, @Reason, 0)",
+                    Connection = _connection
+                };
+
                 query.Parameters.AddWithValue("@UserID", logs.UserID);
                 query.Parameters.AddWithValue("@LogID", logs.LogID);
                 query.Parameters.AddWithValue("@LogLevel", logs.LogLevel);
                 query.Parameters.AddWithValue("@LogMessage", logs.LogMessage);
                 query.Parameters.AddWithValue("@Reason", logs.Reason);
-                result = query.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
 
-            CloseConnection();
-            return result;
+                await query.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                await CloseConnection();
+            }
         }
     }
 }

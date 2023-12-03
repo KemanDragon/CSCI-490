@@ -17,6 +17,7 @@ namespace _490Bot.Handlers.OffensiveLanguageHandler
             {
                 "retard",
                 "cunt",
+                "badword",
                 // Add more
             };
 
