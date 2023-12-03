@@ -10,7 +10,8 @@ using MySql.Data.MySqlClient;
 namespace _490Bot.Utilities{
 public class LangFilter{
         private readonly DiscordSocketClient _client;
-        private static readonly string[] badWords = {"blitch" , "fluck", "glasshole"};
+        private List<string> badWords = new List<string> {"blitch" , "fluck", "glasshole"};
+       // private static readonly string[] badWords = {"blitch" , "fluck", "glasshole"};
 
         public LangFilter(DiscordSocketClient client){
             _client = client;
@@ -22,9 +23,8 @@ public class LangFilter{
             {
                 return;
             }
-            if(badLang(userMessage.Content)){
-                Logging badlanglog = new Logging();
-                Logging(userMessage.Author.Id, userMessage.Author.Username);
+            if(BadLang(userMessage.Content)){
+                Logging badlanglog = new Logging(userMessage.Author.Id, userMessage.Author.Username);
 
             }
         }
