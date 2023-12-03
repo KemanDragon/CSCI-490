@@ -87,13 +87,13 @@ namespace _490Bot.Utilities
             var log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
 
             // Insert the log into the database
-            _dbConnector.Insert(log);
+            await _dbConnector.Insert(log);
         }
 
         public async Task LogBannedUserAsync(ulong userId, string reason)
         {
             // Create a log for banned user
-            var log = new Logs(userId, 0, "UserBanned", $"User {userId} banned. Reason: {reason}", reason);
+            Logs log = new Logs(userId, 0, "UserBanned", $"User {userId} banned. Reason: {reason}", reason);
 
             // Insert the log into the database
             await _dbConnector.Insert(log);

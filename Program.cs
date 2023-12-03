@@ -7,6 +7,7 @@ using Discord.Interactions;
 
 using _490Bot.Handlers;
 using _490Bot.Utilities;
+using _490Bot.Handlers.OffensiveLanguageHandler;
 
 internal class Program 
 {
@@ -104,6 +105,8 @@ internal class Program
 
             _client.MessageReceived += MessageReceived;
             _client.MessageDeleted += _logger.MessageDeletedAsync;
+            //_client.MessageUpdated += _logger.MessageUpdatedAsync;
+            //_client.UserBanned += _logger.LogBannedUserAsync;
             
             _client.Log += Log;
             RegisterSlashCommands();
@@ -154,7 +157,31 @@ internal class Program
     public async Task MessageReceived(SocketMessage arg)
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
+
+        // Check for offensive language
+        CheckForOffensiveLanguage(message);
+
     }
+
+    private void CheckForOffensiveLanguage(SocketUserMessage message)
+    {
+        // Create an instance of OffensiveLanguageDetector
+        var offensiveLanguageDetector = new OffensiveLanguageDetector();
+
+        // Check if the message contains offensive language
+        if (offensiveLanguageDetector.ContainsOffensiveLanguage(message.Content))
+        {
+            // Log offensive language or take any other action
+            LogOffensiveLanguage(message.Author.Id, message.Content);
+        }
+    }
+
+    private async Task LogOffensiveLanguage(ulong authorId, string content)
+    {
+        // Log offensive language
+        await _logger.LogOffensiveLanguageAsync(authorId, content);
+    }
+
 
     private async Task Cleanup(int exitCode) 
     {
