@@ -64,10 +64,16 @@ namespace _490Bot.Handlers
             await _database.UpdateProfile(_profile);
         }
 
-        public async void PrintProfile(ulong userID)
+        public async Task<string> FormatProfile(ulong userID)
         {
             _profile = await _database.GetProfile(userID);
-
+            return $"**User Profile: {_profile.Name} - {_profile.Username}**\n\n"
+                + "**Ranking**\n"
+                + $"**__Total Experience:__** {_profile.ExperienceCurrent}\n"
+                + $"**__Level:__** {_profile.Level}\n"
+                + $"**__Permission Level:__** {_database.GetPermissionLevel(_profile.UserID)}\n\n"
+                + "**Age**\n"
+                + $"**__Joined Server On:__** {_profile.DateJoined}";
         }
     }
 }
