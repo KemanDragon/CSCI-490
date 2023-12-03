@@ -11,6 +11,7 @@ using Discord.Commands;
 
 using _490Bot.Handlers;
 using _490Bot.Utilities;
+using _490Bot.Handlers.OffensiveLanguageHandler;
 
 internal class Program 
 {
@@ -163,6 +164,10 @@ internal class Program
     public async Task MessageReceived(SocketMessage arg)
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
+
+        // Check for offensive language
+        CheckForOffensiveLanguage(message);
+
     }
 
     public async Task RegisterCommands(string commandName, string description)
