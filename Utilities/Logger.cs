@@ -90,10 +90,16 @@ namespace _490Bot.Utilities
             await _dbConnector.Insert(log);
         }
 
-        public async Task LogBannedUserAsync(ulong userId, string reason)
+        public async Task LogBannedUserAsync(SocketUser user, SocketGuild guild)
         {
-            // Create a log for banned user
-            Logs log = new Logs(userId, 0, "UserBanned", $"User {userId} banned. Reason: {reason}", reason);
+            var userId = user.Id;
+
+            // Fetch the ban entry to get the reason (if available)
+            var banEntry = await guild.GetBanAsync(userId);
+            var reason = banEntry?.Reason ?? "No reason provided";
+
+            // Log user ban
+            var log = new Logs(userId, 0, "UserBanned", $"User {userId} banned. Reason: {reason}", reason);
 
             // Insert the log into the database
             await _dbConnector.Insert(log);
@@ -107,9 +113,9 @@ namespace _490Bot.Utilities
             }
         }
 
-        public async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, Cacheable<IMessage, ulong> after, Cacheable<IMessageChannel, ulong> channel)
+        public async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
         {
-            if (after.HasValue && after.Value is SocketUserMessage userMessage)
+            if (after is SocketUserMessage userMessage)
             {
                 await LogDeletionOrEditAsync("Message Updated", userMessage);
             }

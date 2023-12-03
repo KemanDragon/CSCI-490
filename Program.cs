@@ -112,8 +112,9 @@ internal class Program
             _services = new ServiceCollection().BuildServiceProvider();
 
             _client.MessageReceived += MessageReceived;
-            // _client.MessageDeleted += _logger.MessageDeletedAsync;
-            
+            _client.MessageDeleted += _logger.MessageDeletedAsync;
+            _client.MessageUpdated += _logger.MessageUpdatedAsync;
+            _client.UserBanned += _logger.LogBannedUserAsync;
             
             _client.Log += Log;
             RegisterSlashCommands();
@@ -166,10 +167,19 @@ internal class Program
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
 
         // Check for offensive language
-        CheckForOffensiveLanguage(message);
+        if (ContainsOffensiveLanguage(message.Content))
+        {
+            await _logger.LogOffensiveLanguageAsync(message.Author.Id, message.Content);
+            // You can also take additional actions like deleting the message or warning the user.
+        }
 
     }
-
+    private bool ContainsOffensiveLanguage(string text)
+    {
+        // Assuming you have an OffensiveLanguageDetector class
+        var offensiveLanguageDetector = new OffensiveLanguageDetector();
+        return offensiveLanguageDetector.ContainsOffensiveLanguage(text);
+    }
     public async Task RegisterCommands(string commandName, string description)
     {
         _client.Ready += async () =>
