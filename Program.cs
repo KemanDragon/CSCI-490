@@ -1,20 +1,27 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Discord;
 using Discord.WebSocket;
 using Discord.Interactions;
+using Discord.Commands;
 
 using _490Bot.Handlers;
 using _490Bot.Utilities;
+using _490Bot.Handlers.OffensiveLanguageHandler;
 
 internal class Program 
 {
-    public static Task Main(string[] args) => new Program().MainAsync();
+    static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
     private DiscordSocketClient _client;
     private ProfileHandler _profileHandler = new();
-
     private Logger _logger;
+    private CommandService _commands;
+    private IServiceProvider _services;
+
     private Task Log(LogMessage msg) 
     {
         var translateLevel = msg.Severity;
@@ -101,9 +108,12 @@ internal class Program
                 GatewayIntents = GatewayIntents.All
             };
             _client = new DiscordSocketClient(config);
+            _commands = new();
+            _services = new ServiceCollection().BuildServiceProvider();
 
             _client.MessageReceived += MessageReceived;
-         //   _client.MessageDeleted += _logger.MessageDeletedAsync;
+            // _client.MessageDeleted += _logger.MessageDeletedAsync;
+            
             
             _client.Log += Log;
             RegisterSlashCommands();
@@ -154,6 +164,45 @@ internal class Program
     public async Task MessageReceived(SocketMessage arg)
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
+
+        // Check for offensive language
+        CheckForOffensiveLanguage(message);
+
+    }
+
+    public async Task RegisterCommands(string commandName, string description)
+    {
+        _client.Ready += async () =>
+        {
+            await RegisterSlashCommand(commandName, description);
+        };
+
+        _client.MessageReceived += HandleCommand;
+    }
+
+    public async Task HandleCommand(SocketMessage arg)
+    {
+        var message = arg as SocketUserMessage;
+        var context = new SocketCommandContext(_client, message);
+
+        int argPos = 0;
+        if (message.HasStringPrefix("!", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+        {
+            var result = await _commands.ExecuteAsync(context, argPos, _services);
+            if (!result.IsSuccess)
+            {
+                return;
+            }
+        }
+    }
+
+    public async Task RegisterSlashCommand(string commandName, string description)
+    {
+        ulong guildID = 1158429342616006727;
+
+        var command = new SlashCommandBuilder().WithName(commandName).WithDescription(description).Build();
+
+        await _client.Rest.CreateGuildCommand(command, guildID);
     }
 
     private async Task Cleanup(int exitCode) 
@@ -163,6 +212,4 @@ internal class Program
         Environment.Exit(exitCode);
         await Task.CompletedTask;
     }
-
-    private char commandPrefix = '!'; // Add this line
 }
