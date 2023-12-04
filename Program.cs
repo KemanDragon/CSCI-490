@@ -163,7 +163,7 @@ internal class Program
     public async Task MessageReceived(SocketMessage arg)
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
-        /*
+        
         if (await _profileHandler.CheckForProfile(message.Author) == false)
         {
             SocketGuildUser user = (SocketGuildUser)message.Author;
@@ -171,7 +171,7 @@ internal class Program
             await _database.InsertPermissions(user.Id);
             
         }
-        */
+        
         if (ContainsOffensiveLanguage(message.Content))
         {
             var authorId = message.Author.Id;
