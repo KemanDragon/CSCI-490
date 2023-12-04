@@ -54,12 +54,6 @@ namespace _490Bot.Utilities{
         }
         
         
-        
-        
-        
-        
-        
-       
     }
 
 
