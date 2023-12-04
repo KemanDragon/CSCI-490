@@ -16,7 +16,7 @@ internal class Program
     private readonly PassivePermissionsHandler _permissions = new();
     private readonly Database _database = new();
     private CommandHandler _commands;
-    private Logger _logger;
+    private Logger _logger = new Logger();
 
     private Task Log(LogMessage msg)
     {
@@ -55,6 +55,8 @@ internal class Program
         ct.Cancel();
         await inputTask.ContinueWith(_ => { });
         await task;
+
+        _logger.SetLogChannelId(1181344167394295839);
     }
 
     private async Task ReadConsoleInputAsync(CancellationToken ct)
@@ -119,7 +121,7 @@ internal class Program
 
             _client.MessageReceived += MessageReceived;
             _client.SlashCommandExecuted += SlashCommandHandler;
-            // _client.MessageDeleted += _logger.MessageDeletedAsync;
+            
 
 
             _client.MessageReceived += MessageReceived;
@@ -161,11 +163,29 @@ internal class Program
     public async Task MessageReceived(SocketMessage arg)
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
+        /*
         if (await _profileHandler.CheckForProfile(message.Author) == false)
         {
             SocketGuildUser user = (SocketGuildUser)message.Author;
             await ProfileHandler.SetProfile(user);
             await _database.InsertPermissions(user.Id);
+            
+        }
+        */
+        if (ContainsOffensiveLanguage(message.Content))
+        {
+            var authorId = message.Author.Id;
+            var content = message.Content;
+
+            // Send a DM to the user
+            var authorUser = message.Author as SocketUser;
+            if (authorUser != null)
+            {
+                await authorUser.SendMessageAsync($"Your message was flagged for offensive language. Please refrain from using inappropriate language.");
+            }
+
+            // Log offensive language
+            await _logger.LogOffensiveLanguageAsync(authorId, content);
         }
     }
 
@@ -252,7 +272,7 @@ internal class Program
     }
     private bool ContainsOffensiveLanguage(string text)
     {
-        // Assuming you have an OffensiveLanguageDetector class
+        
         var offensiveLanguageDetector = new OffensiveLanguageDetector();
         return offensiveLanguageDetector.ContainsOffensiveLanguage(text);
     }

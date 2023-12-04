@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.IO;
 using System.Text;
+using _490Bot.Handlers.OffensiveLanguageHandler;
 using Discord;
 using Discord.Net;
 using Discord.Rest;
@@ -73,30 +74,58 @@ namespace _490Bot.Utilities
         //private readonly DiscordSocketClient _client;
         //private Logger _logger;
         private readonly Database _dbConnector;
-
+        private ulong _logChannelId;
         public Logger()
         {
             _dbConnector = new Database();
+            
         }
 
+        public void SetLogChannelId(ulong logChannelId)
+        {
+            _logChannelId = logChannelId;
+        }
 
+        private async Task LogToChannelAsync(ITextChannel logChannel, string message)
+        {
+            try
+            {
+                if (logChannel != null)
+                {
+                    await logChannel.SendMessageAsync(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in LogToChannelAsync: {ex}");
+            }
+        }
+
+        private async Task LogMessageToChannelAsync(ITextChannel logChannel, string logMessage)
+        {
+            await LogToChannelAsync(logChannel, logMessage);
+        }
 
         public async Task LogOffensiveLanguageAsync(ulong authorId, string content)
         {
             try
             {
-                // Create a log for offensive language
-                var log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
+                // Create an instance of OffensiveLanguageDetector
+                var offensiveLanguageDetector = new OffensiveLanguageDetector();
 
-                // Insert the log into the database
-                await _dbConnector.Insert(log);
+                // Check if the content contains offensive language
+                if (offensiveLanguageDetector.ContainsOffensiveLanguage(content))
+                {
+                    // Create a log for offensive language
+                    var log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
 
-
+                    // Insert the log into the database
+                    await _dbConnector.Insert(log);
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in LogOffensiveLanguageAsync: {ex}");
-                
             }
         }
 
@@ -128,6 +157,11 @@ namespace _490Bot.Utilities
             {
                 if (message.HasValue && message.Value is SocketUserMessage userMessage)
                 {
+                    // Send deletion log to the specified channel
+                    var logChannel = userMessage.Channel as ITextChannel;
+                    await LogMessageToChannelAsync(logChannel, $"Message deleted: {userMessage.Content}");
+
+                    // Log deletion or edit as needed
                     await LogDeletionOrEditAsync("Message Deleted", userMessage);
                 }
             }
@@ -143,6 +177,14 @@ namespace _490Bot.Utilities
             {
                 if (after is SocketUserMessage userMessage)
                 {
+                    // Send edit log to the specified channel
+                    var logChannel = channel as ITextChannel;
+                    var beforeContent = (before.HasValue && before.Value is SocketUserMessage beforeMessage) ? beforeMessage.Content : "N/A";
+                    var afterContent = userMessage.Content;
+
+                    await LogMessageToChannelAsync(logChannel, $"Message edited: Before: {beforeContent}, After: {afterContent}");
+
+                    // Log deletion or edit as needed
                     await LogDeletionOrEditAsync("Message Updated", userMessage);
                 }
             }
@@ -151,6 +193,8 @@ namespace _490Bot.Utilities
                 Console.WriteLine($"Error in MessageUpdatedAsync: {ex}");
             }
         }
+
+
 
         private async Task LogDeletionOrEditAsync(string action, SocketUserMessage message)
         {
