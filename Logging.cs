@@ -13,7 +13,7 @@ namespace _490Bot.Utilities{
         public string UserName{get; set;}
         public DateTime TimeStamp{get; set;}
 
-        public Logging(ulong userID, string userName){
+        public Logging(ulong userID, string userName, DateTime dateTime){
             UserID = userID;
             UserName = userName;
             TimeStamp = DateTime.Now;
@@ -21,6 +21,7 @@ namespace _490Bot.Utilities{
         }
 
 
+        
     }
 
 

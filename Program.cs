@@ -19,6 +19,7 @@ internal class Program
     private DiscordSocketClient _client;
     private ProfileHandler _profileHandler = new();
     private Logger _logger;
+    private LangFilter _langFilter = new();
     private CommandService _commands;
     private IServiceProvider _services;
 
@@ -165,9 +166,14 @@ internal class Program
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
 
-        // Check for offensive language
-        CheckForOffensiveLanguage(message);
-
+        var filter = new LangFilter();
+        if (filter.langFilter(message.Content)){
+        Database DBConnection = new Database();
+        DateTime TimeStamp = DateTime.Now;
+        
+        await DBConnection.InsertLogAsync(message.Author.Id.ToString(), message.Author.Username, TimeStamp);
+            
+        }
     }
 
     public async Task RegisterCommands(string commandName, string description)
@@ -212,4 +218,21 @@ internal class Program
         Environment.Exit(exitCode);
         await Task.CompletedTask;
     }
+
+    //private char commandPrefix = '!'; // Add this line
+
+
+
+    
+        
+        
+        
+
 }
+
+        
+
+
+
+
+

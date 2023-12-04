@@ -210,40 +210,39 @@ namespace _490Bot.Utilities
         
 
         private string connectionString = "Server=127.0.0.1;Database=muteLogs;User=root;Password=jjhindsj";
-         
-         
-        public bool InsertLog(string userID, string userName, DateTime timeStamp)
+
+        public async Task<bool> InsertLogAsync(string userID, string userName, DateTime timeStamp)
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                
-                using (MySqlConnection connection = new MySqlConnection(connectionString))///
+                bool result = false;
+                try
                 {
-                    try
-                    {
-                        connection.Open();
-                        string sql = "INSERT INTO userLog (userID, userName, timeStamp) VALUES (@userID, @userName, @timeStamp)";
-                        MySqlCommand cmd = new MySqlCommand(sql, connection);
-                        cmd.Parameters.AddWithValue("@userID", userID);
-                        cmd.Parameters.AddWithValue("@userName", userName);
-                        cmd.Parameters.AddWithValue("@timeStamp", timeStamp);
+                    await connection.OpenAsync();
+                    string sql = "INSERT INTO userLog (userID, userName, timeStamp) VALUES (@userID, @userName, @timeStamp)";
+                    MySqlCommand cmd = new MySqlCommand(sql, connection);
+                    cmd.Parameters.AddWithValue("@userID", userID);
+                    cmd.Parameters.AddWithValue("@userName", userName);
+                    cmd.Parameters.AddWithValue("@timeStamp", timeStamp);
 
-                        int rowsAffected = cmd.ExecuteNonQuery();
+                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
-                        Console.WriteLine($"{rowsAffected} row(s) inserted.");
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error: {ex.Message}");
-                        return false;
-                    }
-                    finally{
-                        connection.Close();
-                    }
+                    Console.WriteLine($"{rowsAffected} row(s) inserted.");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    return false;
+                }
+                finally
+                {
+                    await connection.CloseAsync();
+                }
+                return result;
 
-
-
-                } 
             }
+        }
 
 
 
