@@ -70,7 +70,7 @@ namespace _490Bot.Utilities
     
     public class Logger
     {
-        private readonly DiscordSocketClient _client;
+        //private readonly DiscordSocketClient _client;
         //private Logger _logger;
         private readonly Database _dbConnector;
 
@@ -90,6 +90,8 @@ namespace _490Bot.Utilities
 
                 // Insert the log into the database
                 await _dbConnector.Insert(log);
+
+
             }
             catch (Exception ex)
             {

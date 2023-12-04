@@ -114,8 +114,8 @@ internal class Program
 
             
             _client.MessageReceived += MessageReceived;
-            //_client.MessageDeleted += _logger.MessageDeletedAsync;
-            //_client.MessageUpdated += _logger.MessageUpdatedAsync;
+            _client.MessageDeleted += _logger.MessageDeletedAsync;
+            _client.MessageUpdated += _logger.MessageUpdatedAsync;
             //_client.UserBanned += _logger.LogBannedUserAsync;
             
             _client.Log += Log;
@@ -172,7 +172,6 @@ internal class Program
         if (ContainsOffensiveLanguage(message.Content))
         {
             await _logger.LogOffensiveLanguageAsync(message.Author.Id, message.Content);
-            // You can also take additional actions like deleting the message or warning the user.
         }
 
     }
