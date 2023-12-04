@@ -6,6 +6,7 @@ using Discord.Interactions;
 
 using _490Bot.Handlers;
 using _490Bot.Utilities;
+using _490Bot.Handlers.OffensiveLanguageHandler;
 
 internal class Program 
 {
@@ -120,6 +121,11 @@ internal class Program
             _client.SlashCommandExecuted += SlashCommandHandler;
             // _client.MessageDeleted += _logger.MessageDeletedAsync;
             
+            
+            _client.MessageReceived += MessageReceived;
+            //_client.MessageDeleted += _logger.MessageDeletedAsync;
+            //_client.MessageUpdated += _logger.MessageUpdatedAsync;
+            //_client.UserBanned += _logger.LogBannedUserAsync;
             
             _client.Log += Log;
             _commands = new(_client);
@@ -259,6 +265,46 @@ internal class Program
         }
     }
 
+    }
+    private bool ContainsOffensiveLanguage(string text)
+    {
+        // Assuming you have an OffensiveLanguageDetector class
+        var offensiveLanguageDetector = new OffensiveLanguageDetector();
+        return offensiveLanguageDetector.ContainsOffensiveLanguage(text);
+    }
+    public async Task RegisterCommands(string commandName, string description)
+    {
+        _client.Ready += async () =>
+        {
+            await RegisterSlashCommand(commandName, description);
+        };
+
+        _client.MessageReceived += HandleCommand;
+    }
+
+    public async Task HandleCommand(SocketMessage arg)
+    {
+        var message = arg as SocketUserMessage;
+        var context = new SocketCommandContext(_client, message);
+
+        int argPos = 0;
+        if (message.HasStringPrefix("!", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+        {
+            var result = await _commands.ExecuteAsync(context, argPos, _services);
+            if (!result.IsSuccess)
+            {
+                return;
+            }
+        }
+    }
+
+    public async Task RegisterSlashCommand(string commandName, string description)
+    {
+        ulong guildID = 1158429342616006727;
+
+        var command = new SlashCommandBuilder().WithName(commandName).WithDescription(description).Build();
+
+        await _client.Rest.CreateGuildCommand(command, guildID);
     public async Task HandlePermsCommand(SocketSlashCommand command)
     {
         var option = command.Data.Options.First().Name;

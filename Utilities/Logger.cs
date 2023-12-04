@@ -71,47 +71,82 @@ namespace _490Bot.Utilities
     public class Logger
     {
         private readonly DiscordSocketClient _client;
-        private Logger _logger;
+        //private Logger _logger;
         private readonly Database _dbConnector;
 
-        public Logger(Database dbConnector)
+        public Logger()
         {
-            _dbConnector = dbConnector;
+            _dbConnector = new Database();
         }
 
-        
+
 
         public async Task LogOffensiveLanguageAsync(ulong authorId, string content)
         {
-            // Create a log for offensive language
-            var log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
+            try
+            {
+                // Create a log for offensive language
+                var log = new Logs(authorId, 0, "OffensiveLanguage", $"Offensive language detected from user {authorId}", content);
 
-            // Insert the log into the database
-            _dbConnector.Insert(log);
+                // Insert the log into the database
+                await _dbConnector.Insert(log);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in LogOffensiveLanguageAsync: {ex}");
+                
+            }
         }
 
-        public async Task LogBannedUserAsync(ulong userId, string reason)
+        public async Task LogBannedUserAsync(SocketUser user, SocketGuild guild)
         {
-            // Create a log for banned user
-            var log = new Logs(userId, 0, "UserBanned", $"User {userId} banned. Reason: {reason}", reason);
+            try
+            {
+                var userId = user.Id;
 
-            // Insert the log into the database
-            await _dbConnector.Insert(log);
+                // Fetch the ban entry to get the reason (if available)
+                var banEntry = await guild.GetBanAsync(userId);
+                var reason = banEntry?.Reason ?? "No reason provided";
+
+                // Log user ban
+                var log = new Logs(userId, 0, "UserBanned", $"User {userId} banned. Reason: {reason}", reason);
+
+                // Insert the log into the database
+                await _dbConnector.Insert(log);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in BannedUserAsync: {ex}");
+            }
         }
 
         public async Task MessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
         {
-            if (message.HasValue && message.Value is SocketUserMessage userMessage)
+            try
             {
-                await LogDeletionOrEditAsync("Message Deleted", userMessage);
+                if (message.HasValue && message.Value is SocketUserMessage userMessage)
+                {
+                    await LogDeletionOrEditAsync("Message Deleted", userMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in MessageDeletedAsync: {ex}");
             }
         }
 
-        public async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, Cacheable<IMessage, ulong> after, Cacheable<IMessageChannel, ulong> channel)
+        public async Task MessageUpdatedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
         {
-            if (after.HasValue && after.Value is SocketUserMessage userMessage)
+            try
             {
-                await LogDeletionOrEditAsync("Message Updated", userMessage);
+                if (after is SocketUserMessage userMessage)
+                {
+                    await LogDeletionOrEditAsync("Message Updated", userMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in MessageUpdatedAsync: {ex}");
             }
         }
 
