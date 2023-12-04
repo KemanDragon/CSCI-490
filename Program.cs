@@ -20,6 +20,7 @@ internal class Program
     private ProfileHandler _profileHandler = new();
     private Logger _logger;
     private LangFilter _langFilter = new();
+    private LangFilter MuteFunc = new();
     private CommandService _commands;
     private IServiceProvider _services;
 
@@ -167,11 +168,20 @@ internal class Program
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
 
         var filter = new LangFilter();
-        if (filter.langFilter(message.Content)){
+        string badWordFound = filter.langFilter(message.Content);
+        if (badWordFound != null){
+        //if (filter.langFilter(message.Content)){
         Database DBConnection = new Database();
         DateTime TimeStamp = DateTime.Now;
         
-        await DBConnection.InsertLogAsync(message.Author.Id.ToString(), message.Author.Username, TimeStamp);
+        await DBConnection.InsertLogAsync(message.Author.Id.ToString(), message.Author.Username, TimeStamp, badWordFound);
+
+         
+        var guildUser = message.Author as SocketGuildUser;
+
+       
+        var _muteFunc = new MuteFunc(_client);
+        await _muteFunc.MuteUserAsync(guildUser, TimeSpan.FromMinutes(1));
             
         }
     }

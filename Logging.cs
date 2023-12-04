@@ -12,12 +12,13 @@ namespace _490Bot.Utilities{
         public ulong UserID{get; set;}
         public string UserName{get; set;}
         public DateTime TimeStamp{get; set;}
+        public string Offense{get; set;}
 
-        public Logging(ulong userID, string userName, DateTime dateTime){
+        public Logging(ulong userID, string userName, DateTime dateTime, string offense){
             UserID = userID;
             UserName = userName;
             TimeStamp = DateTime.Now;
-
+            this.Offense = offense;
         }
 
 

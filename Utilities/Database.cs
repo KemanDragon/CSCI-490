@@ -209,9 +209,9 @@ namespace _490Bot.Utilities
 
         
 
-        private string connectionString = "Server=127.0.0.1;Database=muteLogs;User=root;Password=jjhindsj";
+        private string connectionString = "Server=127.0.0.1;Database=userLog;User=root;Password=jjhindsj";
 
-        public async Task<bool> InsertLogAsync(string userID, string userName, DateTime timeStamp)
+        public async Task<bool> InsertLogAsync(string userID, string userName, DateTime timeStamp, string offense)
         {
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -219,11 +219,12 @@ namespace _490Bot.Utilities
                 try
                 {
                     await connection.OpenAsync();
-                    string sql = "INSERT INTO userLog (userID, userName, timeStamp) VALUES (@userID, @userName, @timeStamp)";
+                    string sql = "INSERT INTO userLog (userID, userName, timeStamp, offense) VALUES (@userID, @userName, @timeStamp, @offense)";
                     MySqlCommand cmd = new MySqlCommand(sql, connection);
                     cmd.Parameters.AddWithValue("@userID", userID);
                     cmd.Parameters.AddWithValue("@userName", userName);
                     cmd.Parameters.AddWithValue("@timeStamp", timeStamp);
+                    cmd.Parameters.AddWithValue("@offense", offense);
 
                     int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
