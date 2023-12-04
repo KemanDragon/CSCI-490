@@ -34,7 +34,7 @@ namespace _490Bot.Handlers.DeletionEditHandler
             if (before.HasValue && after.HasValue && channel.HasValue)
             {
                 // Log message update
-                return _logger.MessageUpdatedAsync(before, after, channel);
+                return _logger.MessageUpdatedAsync(before, after.Value as SocketMessage, channel.Value as ISocketMessageChannel);
             }
 
             return Task.CompletedTask;
