@@ -1,7 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 
 using _490Bot.Handlers;
-using Discord;
+using _490Bot.Utilities;
 
 namespace _490Bot.Utilities
 {
@@ -40,13 +40,9 @@ namespace _490Bot.Utilities
                 await OpenConnection();
                 MySqlCommand query = new()
                 {
-                    CommandText = $"INSERT INTO profile (MemberID, Username, DisplayName, Status, About, Level, CurrentExp, NeededExp, Color, DateJoined) VALUES(@UserID, @Username, @Name, ' ', ' ', 1, 0, 100, '000000', @DateJoined);",
+                    CommandText = $"INSERT INTO profile VALUES({profile.UserID}, NULL, NULL, 1, 0, 100)",
                     Connection = _connection
                 };
-                query.Parameters.AddWithValue("@UserID", profile.UserID);
-                query.Parameters.AddWithValue("@Username", profile.Username);
-                query.Parameters.AddWithValue("@Name", profile.Name);
-                query.Parameters.AddWithValue("@DateJoined", profile.DateJoined);
                 await query.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
@@ -91,19 +87,16 @@ namespace _490Bot.Utilities
                     CommandText = $"SELECT * FROM Profile WHERE MemberID={userID};",
                     Connection = _connection
                 };
-                
-                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
 
+                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    profile.Username = reader.GetString(1);
-                    profile.Name = reader.GetString(2);
-                    profile.StatusField = reader.GetString(3);
-                    profile.AboutField = reader.GetString(4);
-                    profile.Level = reader.GetInt32(5);
-                    profile.ExperienceCurrent = reader.GetInt32(6);
-                    profile.ExperienceNeeded = reader.GetInt32(7);
-                    profile.Color = reader.GetString(8);
+                    profile.StatusField = (string)reader["Status"];
+                    profile.AboutField = (string)reader["About"];
+                    profile.Level = (int)reader["Level"];
+                    profile.ExperienceCurrent = (int)reader["CurrentExp"];
+                    profile.ExperienceNeeded = (int)reader["NeededExp"];
+                    profile.Color = (string)reader["Color"];
                 }
                 await reader.CloseAsync();
             }
@@ -116,38 +109,6 @@ namespace _490Bot.Utilities
             return profile;
         }
 
-        public async Task<bool> CheckIfProfileExists(ulong userID)
-        {
-            await OpenConnection();
-            MySqlCommand query = new()
-            {
-                CommandText = $"SELECT COUNT(*) FROM Profile WHERE MemberID = {userID};",
-                Connection = _connection
-            };
-
-            var result = await query.ExecuteScalarAsync();
-
-            if (result != null)
-            {
-                int userExists = Convert.ToInt32(result);
-                if (userExists == 0)
-                {
-                    await CloseConnection();
-                    return false;
-                }
-                else
-                {
-                    await CloseConnection();
-                    return true;
-                }
-            }
-            else
-            {
-                await CloseConnection();
-                return true; // Just in case something weird happens, default to returning true to avoid duplicate entries
-            }
-        }
-
         public async Task<int> GetPermissionLevel(ulong userID)
         {
             int level = 0;
@@ -156,13 +117,12 @@ namespace _490Bot.Utilities
                 await OpenConnection();
                 MySqlCommand query = new()
                 {
-                    CommandText = $"SELECT PermLevel FROM Permissions WHERE MemberID=@UserID;",
+                    CommandText = $"SELECT PermLevel FROM Permissions WHERE MemberID={userID};",
                     Connection = _connection
                 };
 
-                query.Parameters.AddWithValue("@UserID", userID);
                 MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
-                while (await reader.ReadAsync()) {
+                {
                     level = (int)reader["PermLevel"];
                 }
                 await reader.CloseAsync();
@@ -183,7 +143,7 @@ namespace _490Bot.Utilities
                 await OpenConnection();
                 MySqlCommand query = new()
                 {
-                    CommandText = $"UPDATE Profile SET Status = {profile.StatusField}, Username = {profile.Username}, DisplayName = {profile.Name} About = {profile.AboutField}, Level = {profile.Level}, CurrentExp = {profile.ExperienceCurrent}, NeededExp = {profile.ExperienceNeeded}, Color = {profile.Color} WHERE MemberID = {profile.UserID};",
+                    CommandText = $"UPDATE Profile SET Status={profile.StatusField}, About={profile.AboutField}, Level={profile.Level}, CurrentExp={profile.ExperienceCurrent}, NeededExp={profile.ExperienceNeeded}, Color={profile.Color} WHERE MemberID={profile.UserID};",
                     Connection = _connection
                 };
                 await query.ExecuteNonQueryAsync();
@@ -202,7 +162,7 @@ namespace _490Bot.Utilities
                 await OpenConnection();
                 MySqlCommand query = new()
                 {
-                    CommandText = $"UPDATE Permissions SET PermLevel = {newPerm} WHERE MemberID = {userID}",
+                    CommandText = $"UPDATE Permissions SET PermLevel={newPerm} WHERE MemberID={userID}",
                     Connection = _connection
                 };
                 await query.ExecuteNonQueryAsync();
