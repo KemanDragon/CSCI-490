@@ -1,13 +1,8 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
 
 using Discord;
 using Discord.WebSocket;
 using Discord.Interactions;
-using Discord.Commands;
 
 using _490Bot.Handlers;
 using _490Bot.Utilities;
@@ -16,10 +11,11 @@ internal class Program
 {
     static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
     private DiscordSocketClient _client;
-    private ProfileHandler _profileHandler = new();
+    private readonly ProfileHandler _profileHandler = new();
+    private readonly PassivePermissionsHandler _permissions = new();
+    private readonly Database _database = new();
+    private CommandHandler _commands;
     private Logger _logger;
-    private CommandService _commands;
-    private IServiceProvider _services;
 
     private Task Log(LogMessage msg) 
     {
@@ -64,6 +60,7 @@ internal class Program
     {
         var exit = "exit";
         var help = "help";
+        var disconnect = "disconnect";
         var sel = 0;
         while (!ct.IsCancellationRequested) 
         {
@@ -79,6 +76,11 @@ internal class Program
                 sel = 2;
             }
 
+            if (input.ToLower() == disconnect)
+            {
+                sel = 3;
+            }
+
             switch (sel) 
             {
                 case 1:
@@ -87,6 +89,11 @@ internal class Program
                     break;
                 case 2:
                     Console.WriteLine("Help command is WIP, lol");
+                    break;
+                case 3:
+                    sel = 0;
+                    await _database.CloseConnection();
+                    Console.WriteLine("Database connection forced to close.");
                     break;
                 default:
                     Console.WriteLine($"'{input}' is not recognized as an internal command. Try 'help' for more information.");
@@ -107,15 +114,15 @@ internal class Program
                 GatewayIntents = GatewayIntents.All
             };
             _client = new DiscordSocketClient(config);
-            _commands = new();
-            _services = new ServiceCollection().BuildServiceProvider();
+            await RegisterSlashCommands();
 
             _client.MessageReceived += MessageReceived;
+            _client.SlashCommandExecuted += SlashCommandHandler;
             // _client.MessageDeleted += _logger.MessageDeletedAsync;
             
             
             _client.Log += Log;
-            RegisterSlashCommands();
+            _commands = new(_client);
             
             try 
             {
@@ -140,70 +147,168 @@ internal class Program
         }
     }
 
-    private void RegisterSlashCommands() 
-    {
-        _client.Ready += async () => 
-        {
-            var _interactionService = new InteractionService(_client.Rest);
-            await _interactionService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
-
-            await _interactionService.RegisterCommandsGloballyAsync(false);
-            _client.InteractionCreated += async (x) => {
-                var ctx = new SocketInteractionContext(_client, x);
-                await _interactionService.ExecuteCommandAsync(ctx, null);
-            };
-        };
-    }
-
     public async Task UserJoined(SocketGuildUser arg)
     {
-        await _profileHandler.SetProfile(arg);
+        await ProfileHandler.SetProfile(arg);
+        await _database.InsertPermissions(arg.Id);
     }
 
     public async Task MessageReceived(SocketMessage arg)
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
-    }
-
-    public async Task RegisterCommands(string commandName, string description)
-    {
-        _client.Ready += async () =>
+        if (await _profileHandler.CheckForProfile(message.Author) == false)
         {
-            await RegisterSlashCommand(commandName, description);
-        };
-
-        _client.MessageReceived += HandleCommand;
-    }
-
-    public async Task HandleCommand(SocketMessage arg)
-    {
-        var message = arg as SocketUserMessage;
-        var context = new SocketCommandContext(_client, message);
-
-        int argPos = 0;
-        if (message.HasStringPrefix("!", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
-        {
-            var result = await _commands.ExecuteAsync(context, argPos, _services);
-            if (!result.IsSuccess)
-            {
-                return;
-            }
+            SocketGuildUser user = (SocketGuildUser)message.Author;
+            await ProfileHandler.SetProfile(user);
+            await _database.InsertPermissions(user.Id);
         }
     }
 
-    public async Task RegisterSlashCommand(string commandName, string description)
+    public async Task RegisterSlashCommands()
     {
-        ulong guildID = 1158429342616006727;
+        _client.Ready += async () =>
+        {
+            ulong guildID = 1158429342616006727;
+            var _interactionService = new InteractionService(_client.Rest);
+            await _interactionService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
 
-        var command = new SlashCommandBuilder().WithName(commandName).WithDescription(description).Build();
+            #region Profile
+            SlashCommandBuilder profileCommand = new SlashCommandBuilder()
+                .WithName("profile")
+                .WithDescription("View or edit your user profile.")
+                .AddOption("id", ApplicationCommandOptionType.User, "If you want to view another user's profile, provide their ID here.", isRequired: false)
+                .AddOption("status", ApplicationCommandOptionType.String, "Update your status field in the profile.", isRequired: false)
+                .AddOption("about", ApplicationCommandOptionType.String, "Update your About Me in the profile.", isRequired: false)
+                .AddOption("color", ApplicationCommandOptionType.String, "Update the color of the stripe on the profile's embed.", isRequired: false);
+            await _client.Rest.CreateGuildCommand(profileCommand.Build(), guildID);
+            #endregion
 
-        await _client.Rest.CreateGuildCommand(command, guildID);
+            #region Permissions
+            SlashCommandBuilder permsCommand = new SlashCommandBuilder()
+                .WithName("perms")
+                .WithDescription("View or edit permissions for users.")
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName("id")
+                    .WithDescription("Gets or sets the field A")
+                    .WithType(ApplicationCommandOptionType.SubCommandGroup)
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName("update")
+                        .WithDescription("Change given user's permission level to the specified number")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption("value", ApplicationCommandOptionType.Integer, "The value to change the permissions to", isRequired: true)
+                    ).AddOption(new SlashCommandOptionBuilder()
+                        .WithName("check")
+                        .WithDescription("Checks the permissions of the given user")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption("id", ApplicationCommandOptionType.User, "The ID of the user to check perms of", isRequired: true)
+                    )
+                );
+            await _client.Rest.CreateGuildCommand(permsCommand.Build(), guildID);
+            #endregion
+
+            await _interactionService.RegisterCommandsGloballyAsync(false);
+            _client.InteractionCreated += async (x) => {
+                SocketInteractionContext ctx = new(_client, x);
+                await _interactionService.ExecuteCommandAsync(ctx, null);
+            };
+        };
+    }
+
+    public async Task SlashCommandHandler(SocketSlashCommand command)
+    {
+        switch (command.Data.Name)
+        {
+            case "profile":
+                await HandleProfileCommand(command);
+                break;
+            case "perms":
+                await HandlePermsCommand(command);
+                break;
+        }
+    }
+
+    public async Task HandleProfileCommand(SocketSlashCommand command)
+    {
+        var option = command.Data.Options?.First().Name;
+        var user = command.User as SocketGuildUser;
+        EmbedBuilder embedBuilder;
+        Profile profile;
+        string output;
+
+        switch (option)
+        {
+            case "ID":
+                var value = (SocketGuildUser)command.Data.Options?.First().Value;
+                embedBuilder = await ProfileHandler.FormatProfile(value);
+                await command.RespondAsync(embed: embedBuilder.Build()); break;
+            case "Status":
+                profile = await _database.GetProfile(user.Id);
+                string newStatus = (string)command.Data.Options?.First().Value;
+                ProfileHandler.UpdateStatus(newStatus);
+                output = "Your status field has successfully been updated.";
+                await command.RespondAsync(output); break;
+            case "About":
+                profile = await _database.GetProfile(user.Id);
+                string newAbout = (string)command.Data.Options?.First().Value;
+                ProfileHandler.UpdateAbout(newAbout);
+                output = "Your about field has successfully been updated.";
+                await command.RespondAsync(output); break;
+            default:
+                embedBuilder = await ProfileHandler.FormatProfile(user);
+                await command.RespondAsync(embed: embedBuilder.Build()); break;
+        }
+    }
+
+    public async Task HandlePermsCommand(SocketSlashCommand command)
+    {
+        var option = command.Data.Options.First().Name;
+        ulong userID = command.User.Id;
+        SocketUser value = (SocketUser)command.Data.Options.First().Value;
+        string getOrSet = command.Data.Options.First().Options.First().Name;
+        string output;
+        int result;
+
+        switch (option)
+        {
+            case "id":
+                if (getOrSet == "check")
+                {
+                    result = await PassivePermissionsHandler.GetPerms(value.Id);
+                    output = $"Permission level of this user is: {result}";
+                    await command.RespondAsync(output); break;
+                }
+                else if (getOrSet == "update")
+                {
+                    int commandAuthorPerms = await PassivePermissionsHandler.GetPerms(userID);
+                    if (commandAuthorPerms != 2)
+                    {
+                        output = "Insufficient permissions to edit user permissions. Only a moderator can edit permissions.";
+                        await command.RespondAsync(output); break;
+                    }
+                    else
+                    {
+                        int newPerms = (int)command.Data.Options.First().Options.First().Value;
+                        await PassivePermissionsHandler.UpdatePerms(value.Id, newPerms);
+                        output = "User permissions successfully updated.";
+                        await command.RespondAsync(output); break;
+                    }
+                }
+                break;
+            /*case "check":
+                result = await PassivePermissionsHandler.GetPerms(userID);
+                output = $"Your permission level is: {result}";
+                await command.RespondAsync(output); break;
+            case "update":
+                output = "You are not able to set your own permissions.";
+                await command.RespondAsync(output); break;*/
+        }
     }
 
     private async Task Cleanup(int exitCode) 
     {
         Console.WriteLine($"Shutting down with exit code {exitCode}...");
         // Additional cleanup actions to go here as other functions are finished
+        await _database.CloseConnection(); // Just in case there's a lingering DB connection, call the method to close it
         Environment.Exit(exitCode);
         await Task.CompletedTask;
     }

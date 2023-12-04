@@ -14,8 +14,8 @@ namespace _490Bot.Handlers
     public class ProfileHandler 
     {
         public IGuild Server { get; set; }
-        private Profile _profile;
-        private readonly Database _database = new();
+        private static Profile _profile;
+        private static readonly Database _database = new();
       
         public Profile Profile 
         { 
@@ -28,7 +28,7 @@ namespace _490Bot.Handlers
             return _profile;
         }
 
-        public async Task SetProfile (SocketGuildUser arg)
+        public static async Task SetProfile (SocketGuildUser arg)
         {
             _profile = new()
             {
@@ -46,34 +46,51 @@ namespace _490Bot.Handlers
             await _database.InsertProfile(_profile);
         }
 
-        public async void UpdateStatus(String newStatus) 
+        public static async void UpdateStatus(String newStatus) 
         {
             _profile.StatusField = newStatus;
             await _database.UpdateProfile(_profile);
         }
 
-        public async void UpdateAbout(String newAbout) 
+        public static async void UpdateAbout(String newAbout) 
         {
             _profile.AboutField = newAbout;
             await _database.UpdateProfile(_profile);
         }
 
-        public async void UpdateColor(String hexCode) 
+        public static async void UpdateColor(String hexCode) 
         {
             _profile.Color = hexCode;
             await _database.UpdateProfile(_profile);
         }
 
-        public async Task<string> FormatProfile(ulong userID)
+        public static async Task<EmbedBuilder> FormatProfile(SocketGuildUser arg)
         {
-            _profile = await _database.GetProfile(userID);
-            return $"**User Profile: {_profile.Name} - {_profile.Username}**\n\n"
+            _profile = await _database.GetProfile(arg.Id);
+            TimestampTag date = TimestampTag.FromDateTimeOffset(arg.JoinedAt.GetValueOrDefault(), TimestampTagStyles.LongDate);
+            return new EmbedBuilder()
+                .WithTitle($"User Profile: {arg.DisplayName}")
+                .WithDescription("**Ranking**\n"
+                + $"**__Total Experience:__** {_profile.ExperienceCurrent}\n"
+                + $"**__Level:__** {_profile.Level}\n"
+                + $"**__Permission Level:__** {await _database.GetPermissionLevel(_profile.UserID)}\n\n"
+                + "**Age**\n"
+                + $"**__Joined Server On:__** {date}")
+                .WithColor(Color.DarkPurple)
+                .WithCurrentTimestamp();
+            /*return $"**User Profile: {_profile.Name}**\n\n"
                 + "**Ranking**\n"
                 + $"**__Total Experience:__** {_profile.ExperienceCurrent}\n"
                 + $"**__Level:__** {_profile.Level}\n"
-                + $"**__Permission Level:__** {_database.GetPermissionLevel(_profile.UserID)}\n\n"
+                + $"**__Permission Level:__** {await _database.GetPermissionLevel(_profile.UserID)}\n\n"
                 + "**Age**\n"
-                + $"**__Joined Server On:__** {_profile.DateJoined}";
+                + $"**__Joined Server On:__** {date}";*/
+        }
+
+        public async Task<bool> CheckForProfile(SocketUser arg)
+        {
+            bool result = await _database.CheckIfProfileExists(arg.Id);
+            return result;
         }
     }
 }
