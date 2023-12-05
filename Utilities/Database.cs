@@ -7,8 +7,8 @@ namespace _490Bot.Utilities
 {
     public class Database
     {
-        private readonly MySqlConnection _connection = new("server=127.0.0.1;uid=root;pwd=root;database=CSCI-490");
-
+       private readonly MySqlConnection _connection = new("server=127.0.0.1;uid=root;pwd=root;database=CSCI-490");
+        private string connectionString = "Server=127.0.0.1;Database=CSCI-490;uid=root;Password=root";
         public async Task OpenConnection()
         {
             try
@@ -252,5 +252,51 @@ namespace _490Bot.Utilities
                 await CloseConnection();
             }
         }
+
+         
+
+        
+
+        
+
+        public async Task<bool> InsertLogAsync(string userID, string userName, DateTime timeStamp, string offense)
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                bool result = false;
+                try
+                {
+                    await connection.OpenAsync();
+                    string sql = "INSERT INTO userLog (userID, userName, timeStamp, offense) VALUES (@userID, @userName, @timeStamp, @offense)";
+                    MySqlCommand cmd = new MySqlCommand(sql, connection);
+                    cmd.Parameters.AddWithValue("@userID", userID);
+                    cmd.Parameters.AddWithValue("@userName", userName);
+                    cmd.Parameters.AddWithValue("@timeStamp", timeStamp);
+                    cmd.Parameters.AddWithValue("@offense", offense);
+
+                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
+
+                    Console.WriteLine($"{rowsAffected} row(s) inserted.");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    return false;
+                }
+                finally
+                {
+                    await connection.CloseAsync();
+                }
+                return result;
+
+            }
+        }
+
+
+
+
+
+
     }
 }

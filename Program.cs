@@ -16,8 +16,11 @@ internal class Program
     private readonly PassivePermissionsHandler _permissions = new();
     private readonly Database _database = new();
     private CommandHandler _commands;
-    private Logger _logger = new Logger();
-
+    private Logger _logger;
+    private LangFilter _langFilter = new();
+    private LangFilter MuteFunc = new();
+    //private CommandService _commands;
+    private IServiceProvider _services;
 
     private Task Log(LogMessage msg)
     {
@@ -122,8 +125,8 @@ internal class Program
             _client.MessageReceived += MessageReceived;
             _client.SlashCommandExecuted += SlashCommandHandler;
             _client.MessageReceived += MessageReceived;
-            _client.MessageDeleted += _logger.MessageDeletedAsync;
-            _client.MessageUpdated += _logger.MessageUpdatedAsync;
+          //  _client.MessageDeleted += _logger.MessageDeletedAsync;
+            //_client.MessageUpdated += _logger.MessageUpdatedAsync;
             //_client.UserBanned += _logger.LogBannedUserAsync;
 
             _client.Log += Log;
@@ -189,6 +192,17 @@ internal class Program
             // Log offensive language
             await _logger.LogOffensiveLanguageAsync(authorId, content);
         }
+        var filter = new LangFilter();
+        string badWordFound = filter.langFilter(message.Content);
+        if (badWordFound != null){
+        Database DBConnection = new Database();
+        DateTime TimeStamp = DateTime.Now;
+        await DBConnection.InsertLogAsync(message.Author.Id.ToString(), message.Author.Username, TimeStamp, badWordFound);
+        var guildUser = message.Author as SocketGuildUser;
+        var _muteFunc = new MuteFunc(_client);
+        await _muteFunc.MuteUserAsync(guildUser, TimeSpan.FromMinutes(1));
+        }
+
     }
 
     public async Task RegisterSlashCommands()
@@ -378,4 +392,21 @@ internal class Program
         Environment.Exit(exitCode);
         await Task.CompletedTask;
     }
+
+    //private char commandPrefix = '!'; // Add this line
+
+
+
+    
+        
+        
+        
+
 }
+
+        
+
+
+
+
+
