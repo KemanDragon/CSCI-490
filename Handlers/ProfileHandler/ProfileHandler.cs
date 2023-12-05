@@ -22,7 +22,7 @@ namespace _490Bot.Handlers
             get { return _profile; }
             set { _profile = value; }
         }
-        public async Task<Profile> GetProfile(ulong uid)
+        public static async Task<Profile> GetProfile(ulong uid)
         {
             _profile = await _database.GetProfile(uid);
             return _profile;
@@ -44,6 +44,48 @@ namespace _490Bot.Handlers
             };
 
             await _database.InsertProfile(_profile);
+        }
+
+        public static async void UpdateStatus(Profile profile, string newStatus)
+        {
+            profile.StatusField = newStatus;
+            await _database.UpdateProfile(profile);
+        }
+
+        public static async void UpdateAbout(Profile profile, string newAbout)
+        {
+            profile.AboutField = newAbout;
+            await _database.UpdateProfile(profile);
+        }
+
+        public static async void UpdateColor(Profile profile, string newColor)
+        {
+            profile.Color = newColor;
+            await _database.UpdateProfile(profile);
+        }
+
+        private static async Task<uint> SetColor(string color)
+        {
+            switch(color)
+            {
+                case "blue":
+                    return Convert.ToUInt32("3498DB", 16);
+                case "gold":
+                    return Convert.ToUInt32("F1C40F", 16);
+                case "green":
+                    return Convert.ToUInt32("2ECC71", 16);
+                case "magenta":
+                    return Convert.ToUInt32("E91E63", 16);
+                case "orange":
+                    return Convert.ToUInt32("E67E22", 16);
+                case "purple":
+                    return Convert.ToUInt32("9B59B6", 16);
+                case "red":
+                    return Convert.ToUInt32("E74C3C", 16);
+                case "teal":
+                    return Convert.ToUInt32("1ABC9C", 16);
+            }
+            return Convert.ToUInt32("1ABC9C", 16);
         }
 
         public static async void UpdateStatus(String newStatus)
@@ -68,15 +110,19 @@ namespace _490Bot.Handlers
         {
             _profile = await _database.GetProfile(arg.Id);
             TimestampTag date = TimestampTag.FromDateTimeOffset(arg.JoinedAt.GetValueOrDefault(), TimestampTagStyles.LongDate);
+
+            uint color = await SetColor(_profile.Color);
             return new EmbedBuilder()
                 .WithTitle($"User Profile: {arg.DisplayName}")
-                .WithDescription("**Ranking**\n"
+                .WithDescription( $"{_profile.StatusField}\n"
+                + "**Ranking**\n"
                 + $"**__Total Experience:__** {_profile.ExperienceCurrent}\n"
                 + $"**__Level:__** {_profile.Level}\n"
-                + $"**__Permission Level:__** {await _database.GetPermissionLevel(_profile.UserID)}\n\n"
+                + $"**__Permission Level:__** {await _database.GetPermissionLevel(_profile.UserID)}\n"
+                + $"{_profile.AboutField}\n"
                 + "**Age**\n"
                 + $"**__Joined Server On:__** {date}")
-                .WithColor(Color.DarkPurple)
+                .WithColor(color)
                 .WithCurrentTimestamp();
             /*return $"**User Profile: {_profile.Name}**\n\n"
                 + "**Ranking**\n"

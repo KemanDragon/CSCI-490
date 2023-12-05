@@ -96,14 +96,14 @@ namespace _490Bot.Utilities
 
                 while (await reader.ReadAsync())
                 {
-                    profile.Username = reader.GetString(1);
-                    profile.Name = reader.GetString(2);
-                    profile.StatusField = reader.GetString(3);
-                    profile.AboutField = reader.GetString(4);
-                    profile.Level = reader.GetInt32(5);
-                    profile.ExperienceCurrent = reader.GetInt32(6);
-                    profile.ExperienceNeeded = reader.GetInt32(7);
-                    profile.Color = reader.GetString(8);
+                    profile.Username = reader.GetString("Username");
+                    profile.Name = reader.GetString("DisplayName");
+                    profile.StatusField = reader.GetString("Status");
+                    profile.AboutField = reader.GetString("About");
+                    profile.Level = reader.GetInt32("Level");
+                    profile.ExperienceCurrent = reader.GetInt32("CurrentExp");
+                    profile.ExperienceNeeded = reader.GetInt32("NeededExp");
+                    profile.Color = reader.GetString("Color");
                 }
                 await reader.CloseAsync();
             }
@@ -164,7 +164,7 @@ namespace _490Bot.Utilities
                 MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    level = (int)reader["PermLevel"];
+                    level = reader.GetInt32("PermLevel");
                 }
                 await reader.CloseAsync();
             }
@@ -184,10 +184,17 @@ namespace _490Bot.Utilities
                 await OpenConnection();
                 MySqlCommand query = new()
                 {
-                    CommandText = $"UPDATE Profile SET Status = {profile.StatusField}, Username = {profile.Username}, DisplayName = {profile.Name} About = {profile.AboutField}, Level = {profile.Level}, CurrentExp = {profile.ExperienceCurrent}, NeededExp = {profile.ExperienceNeeded}, Color = {profile.Color} WHERE MemberID = {profile.UserID};",
+                    CommandText = "UPDATE Profile SET Status = @Status, About = @About, Level = @Level, CurrentExp = @CurrentExp, NeededExp = @NeededExp, Color = @Color WHERE MemberID = @MemberID;",
                     Connection = _connection
                 };
-                await query.ExecuteNonQueryAsync();
+
+                query.Parameters.AddWithValue("@MemberID", profile.UserID);
+                query.Parameters.AddWithValue("@Status", profile.StatusField);
+                query.Parameters.AddWithValue("@About", profile.AboutField);
+                query.Parameters.AddWithValue("@Level", profile.Level);
+                query.Parameters.AddWithValue("@CurrentExp", profile.ExperienceCurrent);
+                query.Parameters.AddWithValue("@NeededExp", profile.ExperienceNeeded);
+                query.Parameters.AddWithValue("@Color", profile.Color);
             }
             catch (Exception ex)
             {

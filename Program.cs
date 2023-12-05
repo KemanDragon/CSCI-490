@@ -18,6 +18,7 @@ internal class Program
     private CommandHandler _commands;
     private Logger _logger = new Logger();
 
+
     private Task Log(LogMessage msg)
     {
         var translateLevel = msg.Severity;
@@ -118,12 +119,8 @@ internal class Program
             };
             _client = new DiscordSocketClient(config);
             await RegisterSlashCommands();
-
             _client.MessageReceived += MessageReceived;
             _client.SlashCommandExecuted += SlashCommandHandler;
-            
-
-
             _client.MessageReceived += MessageReceived;
             _client.MessageDeleted += _logger.MessageDeletedAsync;
             _client.MessageUpdated += _logger.MessageUpdatedAsync;
@@ -163,13 +160,18 @@ internal class Program
     public async Task MessageReceived(SocketMessage arg)
     {
         if (arg is not SocketUserMessage message || message.Author.IsBot) return;
-        
         if (await _profileHandler.CheckForProfile(message.Author) == false)
         {
             SocketGuildUser user = (SocketGuildUser)message.Author;
             await ProfileHandler.SetProfile(user);
             await _database.InsertPermissions(user.Id);
-            
+
+        }
+        Profile profile = await _database.GetProfile(message.Author.Id);
+        profile.IncrementExp();
+        if (profile.ExperienceCurrent == profile.ExperienceNeeded)
+        {
+            profile.LevelUp();          
         }
         
         if (ContainsOffensiveLanguage(message.Content))
@@ -201,10 +203,41 @@ internal class Program
             SlashCommandBuilder profileCommand = new SlashCommandBuilder()
                 .WithName("profile")
                 .WithDescription("View or edit your user profile.")
-                .AddOption("id", ApplicationCommandOptionType.User, "If you want to view another user's profile, provide their ID here.", isRequired: false)
-                .AddOption("status", ApplicationCommandOptionType.String, "Update your status field in the profile.", isRequired: false)
-                .AddOption("about", ApplicationCommandOptionType.String, "Update your About Me in the profile.", isRequired: false)
-                .AddOption("color", ApplicationCommandOptionType.String, "Update the color of the stripe on the profile's embed.", isRequired: false);
+
+                .AddOption(new SlashCommandOptionBuilder()
+                    .WithName("id")
+                    .WithDescription("Provide a user to view a profile. Leave empty to default to your profile.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("id", ApplicationCommandOptionType.User, "The user to view the profile for.", isRequired: true)
+                ).AddOption(new SlashCommandOptionBuilder()
+                    .WithName("status")
+                    .WithDescription("Update your profile's status field.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("value", ApplicationCommandOptionType.String, "The new status to apply to the profile.", isRequired: true)
+                ).AddOption(new SlashCommandOptionBuilder()
+                    .WithName("about")
+                    .WithDescription("Update your profile's About Me field.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("value", ApplicationCommandOptionType.String, "The new About Me to apply to the profile.", isRequired: true)
+                ).AddOption(new SlashCommandOptionBuilder()
+                    .WithName("color")
+                    .WithDescription("Update the color of the embed in the profile.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName("color")
+                        .WithDescription("Select the color you want.")
+                        .WithRequired(true)
+                        .AddChoice("Blue", "blue")
+                        .AddChoice("Gold", "gold")
+                        .AddChoice("Green", "green")
+                        .AddChoice("Magenta", "magenta")
+                        .AddChoice("Orange", "orange")
+                        .AddChoice("Purple", "purple")
+                        .AddChoice("Red", "red")
+                        .AddChoice("Teal", "teal")
+                        .WithType(ApplicationCommandOptionType.String)
+                    )
+            );
             await _client.Rest.CreateGuildCommand(profileCommand.Build(), guildID);
             #endregion
 
@@ -213,20 +246,16 @@ internal class Program
                 .WithName("perms")
                 .WithDescription("View or edit permissions for users.")
                 .AddOption(new SlashCommandOptionBuilder()
-                    .WithName("id")
-                    .WithDescription("Gets or sets the field A")
-                    .WithType(ApplicationCommandOptionType.SubCommandGroup)
-                    .AddOption(new SlashCommandOptionBuilder()
-                        .WithName("update")
-                        .WithDescription("Change given user's permission level to the specified number")
-                        .WithType(ApplicationCommandOptionType.SubCommand)
-                        .AddOption("value", ApplicationCommandOptionType.Integer, "The value to change the permissions to", isRequired: true)
-                    ).AddOption(new SlashCommandOptionBuilder()
-                        .WithName("check")
-                        .WithDescription("Checks the permissions of the given user")
-                        .WithType(ApplicationCommandOptionType.SubCommand)
-                        .AddOption("id", ApplicationCommandOptionType.User, "The ID of the user to check perms of", isRequired: true)
-                    )
+                    .WithName("update")
+                    .WithDescription("Update perms of a user. Note: Only moderators may update permissions.")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("id", ApplicationCommandOptionType.User, "The user to update perms for.", isRequired: true)
+                    .AddOption("value", ApplicationCommandOptionType.Integer, "The value to update perms to", isRequired: true)
+                ).AddOption(new SlashCommandOptionBuilder()
+                    .WithName("check")
+                    .WithDescription("Checks the permissions of the given user")
+                    .WithType(ApplicationCommandOptionType.SubCommand)
+                    .AddOption("id", ApplicationCommandOptionType.User, "The ID of the user to check perms of", isRequired: false)
                 );
             await _client.Rest.CreateGuildCommand(permsCommand.Build(), guildID);
             #endregion
@@ -241,38 +270,50 @@ internal class Program
 
     public async Task HandleProfileCommand(SocketSlashCommand command)
     {
-        var option = command.Data.Options?.First().Name;
-        var user = command.User as SocketGuildUser;
+        var option = command.Data.Options.First().Name;
+        SocketGuildUser user = command.User as SocketGuildUser;
+        ulong userID = command.User.Id;
         EmbedBuilder embedBuilder;
-        Profile profile;
+        Profile profile = new();
         string output;
-
         switch (option)
         {
-            case "ID":
-                var value = (SocketGuildUser)command.Data.Options?.First().Value;
+            case "id":
+                var valueOption = command.Data.Options.First().Options.First();
+                var value = valueOption?.Value as SocketGuildUser;
                 embedBuilder = await ProfileHandler.FormatProfile(value);
-                await command.RespondAsync(embed: embedBuilder.Build()); break;
-            case "Status":
-                profile = await _database.GetProfile(user.Id);
-                string newStatus = (string)command.Data.Options?.First().Value;
-                ProfileHandler.UpdateStatus(newStatus);
+                await command.RespondAsync(embed: embedBuilder?.Build());
+                break;
+            case "status":
+                profile = await _database.GetProfile(userID);
+                string newStatus = (string)command.Data.Options.First().Options.First().Value;
+                ProfileHandler.UpdateStatus(profile, newStatus);
                 output = "Your status field has successfully been updated.";
-                await command.RespondAsync(output); break;
-            case "About":
-                profile = await _database.GetProfile(user.Id);
-                string newAbout = (string)command.Data.Options?.First().Value;
-                ProfileHandler.UpdateAbout(newAbout);
+                await command.RespondAsync(output);
+                break;
+            case "about":
+                profile = await _database.GetProfile(userID);
+                string newAbout = (string)command.Data.Options.First().Options.First().Value;
+                ProfileHandler.UpdateAbout(profile, newAbout);
                 output = "Your about field has successfully been updated.";
-                await command.RespondAsync(output); break;
+                await command.RespondAsync(output);
+                break;
+            case "color":
+                profile = await _database.GetProfile(userID);
+                string newColor = (string)command.Data.Options.First().Options.First().Value;
+                ProfileHandler.UpdateColor(profile, newColor);
+                output = "Your profile's color has successfully been updated.";
+                await command.RespondAsync(output);
+                break;
             default:
                 embedBuilder = await ProfileHandler.FormatProfile(user);
-                await command.RespondAsync(embed: embedBuilder.Build()); break;
+                await command.RespondAsync(embed: embedBuilder?.Build());
+                break;
         }
     }
     private bool ContainsOffensiveLanguage(string text)
     {
-        
+        // Assuming you have an OffensiveLanguageDetector class
         var offensiveLanguageDetector = new OffensiveLanguageDetector();
         return offensiveLanguageDetector.ContainsOffensiveLanguage(text);
     }
@@ -293,44 +334,39 @@ internal class Program
     {
         var option = command.Data.Options.First().Name;
         ulong userID = command.User.Id;
-        SocketUser value = (SocketUser)command.Data.Options.First().Value;
-        string getOrSet = command.Data.Options.First().Options.First().Name;
+
+        string getOrSet = command.Data.Options.First().Name;
+        SocketUser? user;
         string output;
         int result;
 
         switch (option)
         {
-            case "id":
-                if (getOrSet == "check")
+            case "check":
+                user = (SocketUser?)command.Data.Options.First().Options.First()?.Value;
+                if (user == null)
                 {
-                    result = await PassivePermissionsHandler.GetPerms(value.Id);
-                    output = $"Permission level of this user is: {result}";
+                    user = command.User;
+                }
+                result = await PassivePermissionsHandler.GetPerms(user.Id);
+                output = $"Permission level of this user is: {result}";
+                await command.RespondAsync(output); break;
+
+            case "update":
+                int commandAuthorPerms = await PassivePermissionsHandler.GetPerms(userID);
+                if (commandAuthorPerms != 2)
+                {
+                    output = "Insufficient permissions to edit user permissions. Only a moderator can edit permissions.";
                     await command.RespondAsync(output); break;
                 }
-                else if (getOrSet == "update")
+                else
                 {
-                    int commandAuthorPerms = await PassivePermissionsHandler.GetPerms(userID);
-                    if (commandAuthorPerms != 2)
-                    {
-                        output = "Insufficient permissions to edit user permissions. Only a moderator can edit permissions.";
-                        await command.RespondAsync(output); break;
-                    }
-                    else
-                    {
-                        int newPerms = (int)command.Data.Options.First().Options.First().Value;
-                        await PassivePermissionsHandler.UpdatePerms(value.Id, newPerms);
-                        output = "User permissions successfully updated.";
-                        await command.RespondAsync(output); break;
-                    }
-                }
-                break;
-                /*case "check":
-                    result = await PassivePermissionsHandler.GetPerms(userID);
-                    output = $"Your permission level is: {result}";
+                    int newPerms = (int)command.Data.Options.First().Options.FirstOrDefault(option => option.Name == "value").Value;
+                    user = (SocketUser)command.Data.Options.First().Options.FirstOrDefault(option => option.Name == "id").Value;
+                    await PassivePermissionsHandler.UpdatePerms(user.Id, newPerms);
+                    output = "User permissions successfully updated.";
                     await command.RespondAsync(output); break;
-                case "update":
-                    output = "You are not able to set your own permissions.";
-                    await command.RespondAsync(output); break;*/
+                }
         }
     }
 

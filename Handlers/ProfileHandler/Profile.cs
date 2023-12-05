@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using _490Bot.Utilities;
 using Discord;
 
 namespace _490Bot.Handlers {
@@ -18,8 +19,18 @@ namespace _490Bot.Handlers {
         public int ExperienceCurrent { get; set; }
         public int ExperienceNeeded { get; set; }
 
-        public void LevelUp() {
+        private readonly static Database _database = new();
+
+        public async void LevelUp() {
             Level++;
+            ExperienceNeeded *= 2;
+            await _database.UpdateProfile(this);
+        }
+
+        public async void IncrementExp()
+        {
+            ExperienceCurrent++;
+            await _database.UpdateProfile(this);
         }
     }
 }
