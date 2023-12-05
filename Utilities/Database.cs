@@ -83,7 +83,6 @@ namespace _490Bot.Utilities
             {
                 UserID = userID
             };
-            
             try
             {
                 await OpenConnection();
@@ -231,8 +230,8 @@ namespace _490Bot.Utilities
                 await OpenConnection();
                 using MySqlCommand query = new MySqlCommand
                 {
-                    CommandText = "INSERT INTO logs (UserID, LogID, LogLevel, LogMessage, Reason, SomeOtherColumn) " +
-                                  "VALUES (@UserID, @LogID, @LogLevel, @LogMessage, @Reason, 0)",
+                    CommandText = "INSERT INTO logs (UserID, LogID, LogLevel, LogMessage, Reason) " +
+                                  "VALUES (@UserID, @LogID, @LogLevel, @LogMessage, @Reason)",
                     Connection = _connection
                 };
 

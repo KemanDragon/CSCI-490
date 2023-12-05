@@ -16,7 +16,8 @@ internal class Program
     private readonly PassivePermissionsHandler _permissions = new();
     private readonly Database _database = new();
     private CommandHandler _commands;
-    private Logger _logger;
+    private Logger _logger = new Logger();
+
 
     private Task Log(LogMessage msg)
     {
@@ -55,6 +56,8 @@ internal class Program
         ct.Cancel();
         await inputTask.ContinueWith(_ => { });
         await task;
+
+        _logger.SetLogChannelId(1181344167394295839);
     }
 
     private async Task ReadConsoleInputAsync(CancellationToken ct)
@@ -116,15 +119,11 @@ internal class Program
             };
             _client = new DiscordSocketClient(config);
             await RegisterSlashCommands();
-
             _client.MessageReceived += MessageReceived;
             _client.SlashCommandExecuted += SlashCommandHandler;
-            // _client.MessageDeleted += _logger.MessageDeletedAsync;
-
-
             _client.MessageReceived += MessageReceived;
-            //_client.MessageDeleted += _logger.MessageDeletedAsync;
-            //_client.MessageUpdated += _logger.MessageUpdatedAsync;
+            _client.MessageDeleted += _logger.MessageDeletedAsync;
+            _client.MessageUpdated += _logger.MessageUpdatedAsync;
             //_client.UserBanned += _logger.LogBannedUserAsync;
 
             _client.Log += Log;
@@ -166,12 +165,29 @@ internal class Program
             SocketGuildUser user = (SocketGuildUser)message.Author;
             await ProfileHandler.SetProfile(user);
             await _database.InsertPermissions(user.Id);
+
         }
         Profile profile = await _database.GetProfile(message.Author.Id);
         profile.IncrementExp();
         if (profile.ExperienceCurrent == profile.ExperienceNeeded)
         {
-            profile.LevelUp();
+            profile.LevelUp();          
+        }
+        
+        if (ContainsOffensiveLanguage(message.Content))
+        {
+            var authorId = message.Author.Id;
+            var content = message.Content;
+
+            // Send a DM to the user
+            var authorUser = message.Author as SocketUser;
+            if (authorUser != null)
+            {
+                await authorUser.SendMessageAsync($"Your message was flagged for offensive language. Please refrain from using inappropriate language.");
+            }
+
+            // Log offensive language
+            await _logger.LogOffensiveLanguageAsync(authorId, content);
         }
     }
 
@@ -187,11 +203,12 @@ internal class Program
             SlashCommandBuilder profileCommand = new SlashCommandBuilder()
                 .WithName("profile")
                 .WithDescription("View or edit your user profile.")
+
                 .AddOption(new SlashCommandOptionBuilder()
                     .WithName("id")
                     .WithDescription("Provide a user to view a profile. Leave empty to default to your profile.")
                     .WithType(ApplicationCommandOptionType.SubCommand)
-                    .AddOption("id", ApplicationCommandOptionType.User, "The user to view the profile for.", isRequired: false)
+                    .AddOption("id", ApplicationCommandOptionType.User, "The user to view the profile for.", isRequired: true)
                 ).AddOption(new SlashCommandOptionBuilder()
                     .WithName("status")
                     .WithDescription("Update your profile's status field.")
@@ -317,6 +334,7 @@ internal class Program
     {
         var option = command.Data.Options.First().Name;
         ulong userID = command.User.Id;
+
         string getOrSet = command.Data.Options.First().Name;
         SocketUser? user;
         string output;

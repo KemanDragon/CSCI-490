@@ -88,10 +88,29 @@ namespace _490Bot.Handlers
             return Convert.ToUInt32("1ABC9C", 16);
         }
 
+        public static async void UpdateStatus(String newStatus)
+        {
+            _profile.StatusField = newStatus;
+            await _database.UpdateProfile(_profile);
+        }
+
+        public static async void UpdateAbout(String newAbout)
+        {
+            _profile.AboutField = newAbout;
+            await _database.UpdateProfile(_profile);
+        }
+
+        public static async void UpdateColor(String hexCode)
+        {
+            _profile.Color = hexCode;
+            await _database.UpdateProfile(_profile);
+        }
+
         public static async Task<EmbedBuilder> FormatProfile(SocketGuildUser arg)
         {
             _profile = await _database.GetProfile(arg.Id);
             TimestampTag date = TimestampTag.FromDateTimeOffset(arg.JoinedAt.GetValueOrDefault(), TimestampTagStyles.LongDate);
+
             uint color = await SetColor(_profile.Color);
             return new EmbedBuilder()
                 .WithTitle($"User Profile: {arg.DisplayName}")
