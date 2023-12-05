@@ -10,7 +10,7 @@ using MySql.Data.MySqlClient;
 namespace _490Bot.Utilities{
     public class LangFilter{
             
-        private List<string> badWords = new List<string> {"blitch" , "fluck", "glasshole"};
+        private List<string> badWords = new List<string> {"blitch" , "fluck", "glasshole", "grass"};
         
         public string langFilter(string content){
             string lowercasemessage = content.ToLower();

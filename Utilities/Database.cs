@@ -7,8 +7,8 @@ namespace _490Bot.Utilities
 {
     public class Database
     {
-        private readonly MySqlConnection _connection = new("server=127.0.0.1;uid=root;pwd=root;database=CSCI-490");
-
+       private readonly MySqlConnection _connection = new("server=127.0.0.1;uid=root;pwd=root;database=CSCI-490");
+        private string connectionString = "Server=127.0.0.1;Database=CSCI-490;uid=root;Password=root";
         public async Task OpenConnection()
         {
             try
@@ -250,7 +250,7 @@ namespace _490Bot.Utilities
 
         
 
-        private string connectionString = "Server=127.0.0.1;Database=userLog;User=root;Password=jjhindsj";
+        
 
         public async Task<bool> InsertLogAsync(string userID, string userName, DateTime timeStamp, string offense)
         {

@@ -15,6 +15,7 @@ namespace _490Bot.Utilities{
         
         private readonly DiscordSocketClient _client;
         private readonly ulong _mutedRoleId = 1181093135623929898;
+        private readonly ulong _channelID = 1171155924879163493;
 
         public MuteFunc(DiscordSocketClient client)
             {
@@ -31,6 +32,10 @@ namespace _490Bot.Utilities{
             if (mutedRole != null)
             {
                 await user.AddRoleAsync(mutedRole);
+                var channel = _client.GetChannel(_channelID) as IMessageChannel;
+                if (channel != null){
+                await channel.SendMessageAsync($"{user.Username} has been muted");
+                }
             }
 
             
@@ -50,6 +55,10 @@ namespace _490Bot.Utilities{
             if (mutedRole != null)
             {
                 await user.RemoveRoleAsync(mutedRole);
+                var channel = _client.GetChannel(_channelID) as IMessageChannel;
+                if (channel != null){
+                await channel.SendMessageAsync($"{user.Username} has been unmuted");
+                }
             }
         }
         

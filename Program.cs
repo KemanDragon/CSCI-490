@@ -19,7 +19,7 @@ internal class Program
     private Logger _logger;
     private LangFilter _langFilter = new();
     private LangFilter MuteFunc = new();
-    private CommandService _commands;
+    //private CommandService _commands;
     private IServiceProvider _services;
 
     private Task Log(LogMessage msg)
@@ -127,8 +127,8 @@ internal class Program
 
 
             _client.MessageReceived += MessageReceived;
-            _client.MessageDeleted += _logger.MessageDeletedAsync;
-            _client.MessageUpdated += _logger.MessageUpdatedAsync;
+          //  _client.MessageDeleted += _logger.MessageDeletedAsync;
+            //_client.MessageUpdated += _logger.MessageUpdatedAsync;
             //_client.UserBanned += _logger.LogBannedUserAsync;
 
             _client.Log += Log;
@@ -171,6 +171,17 @@ internal class Program
             await ProfileHandler.SetProfile(user);
             await _database.InsertPermissions(user.Id);
         }
+        var filter = new LangFilter();
+        string badWordFound = filter.langFilter(message.Content);
+        if (badWordFound != null){
+        Database DBConnection = new Database();
+        DateTime TimeStamp = DateTime.Now;
+        await DBConnection.InsertLogAsync(message.Author.Id.ToString(), message.Author.Username, TimeStamp, badWordFound);
+        var guildUser = message.Author as SocketGuildUser;
+        var _muteFunc = new MuteFunc(_client);
+        await _muteFunc.MuteUserAsync(guildUser, TimeSpan.FromMinutes(1));
+        }
+
     }
 
     public async Task RegisterSlashCommands()
