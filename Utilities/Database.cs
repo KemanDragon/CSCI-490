@@ -252,5 +252,46 @@ namespace _490Bot.Utilities
                 await CloseConnection();
             }
         }
+
+        public async Task<Logs> GetLog (ulong userID)
+        {
+            ulong logID = 0;
+            string logLevel = "";
+            string logMessage = "";
+            string reason = "";
+
+            Logs log = null;
+
+            try
+            {
+                await OpenConnection();
+                MySqlCommand query = new()
+                {
+                    CommandText = "SELECT * FROM Logs WHERE UserID = @UserID",
+                    Connection = _connection
+                };
+
+                query.Parameters.AddWithValue("@UserID", userID);
+
+                MySqlDataReader reader = (MySqlDataReader)await query.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    logID = reader.GetUInt64("LogID");
+                    logLevel = reader.GetString("LogLevel");
+                    logMessage = reader.GetString("LogMessage");
+                    reason = reader.GetString("Reason");
+                }
+                log = new(userID, logID, logLevel, logMessage, reason);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            await CloseConnection();
+            return log;
+        }
+
+
     }
 }

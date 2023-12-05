@@ -20,17 +20,5 @@ namespace _490Bot.Handlers {
         public int ExperienceNeeded { get; set; }
 
         private readonly static Database _database = new();
-
-        public async void LevelUp() {
-            Level++;
-            ExperienceNeeded *= 2;
-            await _database.UpdateProfile(this);
-        }
-
-        public async void IncrementExp()
-        {
-            ExperienceCurrent++;
-            await _database.UpdateProfile(this);
-        }
     }
 }

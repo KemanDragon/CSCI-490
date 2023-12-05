@@ -57,7 +57,7 @@ internal class Program
         await inputTask.ContinueWith(_ => { });
         await task;
 
-        _logger.SetLogChannelId(1181344167394295839);
+        //_logger.SetLogChannelId(1181344167394295839);
     }
 
     private async Task ReadConsoleInputAsync(CancellationToken ct)
@@ -168,10 +168,10 @@ internal class Program
 
         }
         Profile profile = await _database.GetProfile(message.Author.Id);
-        profile.IncrementExp();
+        await ProfileHandler.IncrementExp(profile);
         if (profile.ExperienceCurrent == profile.ExperienceNeeded)
         {
-            profile.LevelUp();          
+            await ProfileHandler.LevelUp(profile);          
         }
         
         if (ContainsOffensiveLanguage(message.Content))
@@ -255,9 +255,16 @@ internal class Program
                     .WithName("check")
                     .WithDescription("Checks the permissions of the given user")
                     .WithType(ApplicationCommandOptionType.SubCommand)
-                    .AddOption("id", ApplicationCommandOptionType.User, "The ID of the user to check perms of", isRequired: false)
+                    .AddOption("id", ApplicationCommandOptionType.User, "The ID of the user to check perms of", isRequired: true)
                 );
             await _client.Rest.CreateGuildCommand(permsCommand.Build(), guildID);
+            #endregion
+
+            #region Log
+            SlashCommandBuilder logCommand = new SlashCommandBuilder()
+                .WithName("log")
+                .WithDescription("View logs for a user")
+                .AddOption("id", ApplicationCommandOptionType.User, "The ID of the user to lookup.", isRequired: true);
             #endregion
 
             await _interactionService.RegisterCommandsGloballyAsync(false);
@@ -329,6 +336,26 @@ internal class Program
                 await HandlePermsCommand(command);
                 break;
         }
+    }
+
+    public async Task HandleLogCommand(SocketSlashCommand command)
+    {
+        var option = command.Data.Options.First();
+        ulong userID = command.User.Id;
+        int perm = await PassivePermissionsHandler.GetPerms(userID);
+        if (perm != 2)
+        {
+            await command.RespondAsync("Only a moderator can view logs");
+            return;
+        }
+
+        userID = (ulong)command.Data.Options.First().Options.First().Value;
+        Logs log = await _database.GetLog(userID);
+        if (log == null)
+        {
+            await command.RespondAsync("Log not found.");
+        }
+        EmbedBuilder embedBuilder = new EmbedBuilder();
     }
     public async Task HandlePermsCommand(SocketSlashCommand command)
     {

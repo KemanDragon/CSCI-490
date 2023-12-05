@@ -106,6 +106,19 @@ namespace _490Bot.Handlers
             await _database.UpdateProfile(_profile);
         }
 
+        public static async Task LevelUp(Profile profile)
+        {
+            profile.Level++;
+            profile.ExperienceNeeded *= 2;
+            await _database.UpdateProfile(profile);
+        }
+
+        public static async Task IncrementExp(Profile profile)
+        {
+            profile.ExperienceCurrent++;
+            await _database.UpdateProfile(profile);
+        }
+
         public static async Task<EmbedBuilder> FormatProfile(SocketGuildUser arg)
         {
             _profile = await _database.GetProfile(arg.Id);
